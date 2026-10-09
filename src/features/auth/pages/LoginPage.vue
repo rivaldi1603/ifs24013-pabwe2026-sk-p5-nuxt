@@ -3,7 +3,7 @@
     <div>
       <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
       <input 
-        id="email" 
+        id="login-email-input" 
         type="email" 
         v-model="email" 
         @input="onEmailInput"
@@ -16,7 +16,7 @@
     <div>
       <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
       <input 
-        id="password" 
+        id="login-password-input" 
         type="password" 
         v-model="password" 
         @input="onPasswordInput"
@@ -27,6 +27,7 @@
     </div>
 
     <button 
+      id="login-submit-button"
       type="submit" 
       :disabled="authStore.isLogin"
       class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
