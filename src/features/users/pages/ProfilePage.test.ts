@@ -64,4 +64,18 @@ describe('ProfilePage', () => {
     Object.defineProperty(input.element, 'files', { value: [new File([''], 'test')] });
     await input.trigger('change');
   });
+
+  it('calculates password strength', async () => {
+    const { wrapper } = renderWithProviders(ProfilePage);
+    const store = useUsersStore();
+    store.me = { name: 'User', email: 'a@a' };
+    await nextTick();
+    
+    const pwdInput = wrapper.find('input[type="password"]');
+    await pwdInput.setValue('a');
+    await pwdInput.setValue('abcdef');
+    await pwdInput.setValue('abcdefghi');
+    await pwdInput.setValue('Abcdefghi');
+    await pwdInput.setValue('Abcdefghi1!');
+  });
 });

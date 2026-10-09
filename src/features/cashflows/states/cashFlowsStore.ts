@@ -75,13 +75,13 @@ export const useCashFlowsStore = defineStore("cashFlows", {
   actions: {
     async asyncGetCashFlows(params?: CashFlowQueryParams) {
       const response = await getCashFlows(params as Record<string, string>);
-      this.cashFlows = response?.data?.items || [];
-      this.stats = response?.data?.summary || null;
+      this.cashFlows = response?.data?.cash_flows || response?.data?.items || response?.data || [];
+      this.stats = response?.data?.summary || response?.summary || null;
       return response;
     },
     async asyncGetCashFlowDetail(id: string) {
       const response = await getCashFlowDetail(id);
-      this.cashFlow = response?.data || null;
+      this.cashFlow = response?.data?.cash_flow || response?.data?.item || response?.data || response || null;
       return response;
     },
     async asyncAddCashFlow(payload: Record<string, any>) {

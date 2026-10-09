@@ -33,4 +33,25 @@ describe('RegisterPage', () => {
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncRegister).toHaveBeenCalled();
   });
+
+  it('handles input events and password toggle', async () => {
+    const { wrapper } = renderWithProviders(RegisterPage);
+    const nameInput = wrapper.find('#register-name-input');
+    await nameInput.setValue('Test User');
+    await nameInput.trigger('input');
+
+    const emailInput = wrapper.find('#register-email-input');
+    await emailInput.setValue('test@test.com');
+    await emailInput.trigger('input');
+    
+    const passwordInput = wrapper.find('#register-password-input');
+    await passwordInput.setValue('password');
+    await passwordInput.trigger('input');
+
+    const toggleBtn = wrapper.find('button[type="button"]');
+    await toggleBtn.trigger('click');
+    expect(passwordInput.attributes('type')).toBe('text');
+    await toggleBtn.trigger('click');
+    expect(passwordInput.attributes('type')).toBe('password');
+  });
 });

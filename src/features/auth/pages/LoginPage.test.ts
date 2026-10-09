@@ -34,4 +34,21 @@ describe('LoginPage', () => {
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncLogin).toHaveBeenCalled();
   });
+
+  it('handles input events and password toggle', async () => {
+    const { wrapper } = renderWithProviders(LoginPage);
+    const emailInput = wrapper.find('#login-email-input');
+    await emailInput.setValue('test@test.com');
+    await emailInput.trigger('input');
+    
+    const passwordInput = wrapper.find('#login-password-input');
+    await passwordInput.setValue('password');
+    await passwordInput.trigger('input');
+
+    const toggleBtn = wrapper.find('button[type="button"]');
+    await toggleBtn.trigger('click');
+    expect(passwordInput.attributes('type')).toBe('text');
+    await toggleBtn.trigger('click');
+    expect(passwordInput.attributes('type')).toBe('password');
+  });
 });

@@ -1,8 +1,9 @@
 <template>
   <div class="max-w-3xl mx-auto space-y-6">
     <div class="flex items-center space-x-4">
-      <router-link to="/" class="text-slate-500 hover:text-blue-600 transition-colors">
-        &larr; Kembali
+      <router-link to="/" class="inline-flex items-center space-x-2 text-slate-500 hover:text-blue-600 transition-colors bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-100">
+        <ArrowLeftIcon class="w-4 h-4" />
+        <span class="text-sm font-medium">Kembali</span>
       </router-link>
       <h1 class="text-2xl font-semibold text-gray-900">Rincian Transaksi</h1>
     </div>
@@ -18,7 +19,9 @@
             {{ cashFlowsStore.cashFlow.type === 'inflow' ? 'Pemasukan (Inflow)' : 'Pengeluaran (Outflow)' }}
           </span>
         </div>
-        <div class="text-right">
+        <div class="text-right flex items-center space-x-2">
+          <TrendingUpIcon v-if="cashFlowsStore.cashFlow.type === 'inflow'" class="w-8 h-8 text-emerald-500" />
+          <TrendingDownIcon v-else class="w-8 h-8 text-red-500" />
           <p class="text-3xl font-bold" :class="cashFlowsStore.cashFlow.type === 'inflow' ? 'text-emerald-600' : 'text-red-600'">
             {{ cashFlowsStore.cashFlow.type === 'inflow' ? '+' : '-' }} {{ formatRupiah(cashFlowsStore.cashFlow.nominal) }}
           </p>
@@ -32,7 +35,7 @@
           </div>
           <div>
             <dt class="text-sm font-medium text-slate-500">Sumber Dana</dt>
-            <dd class="mt-1 text-lg font-semibold text-slate-900 uppercase">{{ cashFlowsStore.cashFlow.source }}</dd>
+            <dd class="mt-1 text-lg font-semibold text-slate-900">{{ sourceLabel(cashFlowsStore.cashFlow.source) }}</dd>
           </div>
           <div class="sm:col-span-2">
             <dt class="text-sm font-medium text-slate-500">Deskripsi Catatan</dt>
@@ -69,6 +72,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { formatRupiah, formatDate, showConfirmDialog, showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
 import ChangeModal from '../modals/ChangeModal.vue';
+import { ArrowLeft as ArrowLeftIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -76,6 +80,11 @@ const cashFlowsStore = useCashFlowsStore();
 
 const isChangeModalOpen = ref(false);
 const id = route.params.cashFlowId as string;
+
+const sourceLabel = (src: string) => {
+  const map: Record<string, string> = { cash: 'Tunai', savings: 'Tabungan', loans: 'Pinjaman' };
+  return map[src] || src;
+};
 
 const fetchDetail = async () => {
   try {

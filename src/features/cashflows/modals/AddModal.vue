@@ -1,7 +1,17 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="close"></div>
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden">
+  <Transition
+    enter-active-class="transition duration-200 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition duration-150 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" @click="close"></div>
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md relative z-10 overflow-hidden transform transition-all"
+        style="animation: modal-pop 0.3s ease-out forwards;"
+      >
       <div class="px-6 py-4 border-b">
         <h3 class="text-lg font-medium text-gray-900">Tambah Pencatatan Arus Kas</h3>
       </div>
@@ -27,7 +37,12 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Nominal (Rupiah)</label>
-          <input type="number" v-model.number="nominal" required min="1" placeholder="50000" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="text-gray-500 sm:text-sm">Rp</span>
+            </div>
+            <input type="text" :value="rawNominal" @input="formatInput" required placeholder="50.000" class="block w-full pl-9 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700">Deskripsi/Keterangan</label>
@@ -40,7 +55,15 @@
       </form>
     </div>
   </div>
+</Transition>
 </template>
+
+<style>
+@keyframes modal-pop {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+</style>
 
 <script setup lang="ts">
 import { ref } from 'vue';
@@ -56,7 +79,20 @@ const type = ref('inflow');
 const source = ref('cash');
 const label = ref('');
 const nominal = ref<number | null>(null);
+const rawNominal = ref('');
 const description = ref('');
+
+const formatInput = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  let val = target.value.replace(/\D/g, '');
+  if (!val) {
+    rawNominal.value = '';
+    nominal.value = null;
+    return;
+  }
+  nominal.value = parseInt(val, 10);
+  rawNominal.value = new Intl.NumberFormat('id-ID').format(nominal.value);
+};
 
 const close = () => {
   emit('close');
@@ -79,6 +115,7 @@ const handleSubmit = async () => {
     source.value = 'cash';
     label.value = '';
     nominal.value = null;
+    rawNominal.value = '';
     description.value = '';
   } catch (err: any) {
     showErrorDialog("Gagal", err.message || "Gagal menambahkan arus kas");

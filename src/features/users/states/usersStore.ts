@@ -12,8 +12,14 @@ export const useUsersStore = defineStore("users", {
       this.isLoading = true;
       try {
         const response = await getUsers();
-        this.users = response?.data || [];
+        this.users = response?.data?.users || response?.data?.items || response?.data || response || [];
+        if (!Array.isArray(this.users)) {
+          this.users = [];
+        }
         return response;
+      } catch (error) {
+        this.users = [];
+        throw error;
       } finally {
         this.isLoading = false;
       }
@@ -22,8 +28,10 @@ export const useUsersStore = defineStore("users", {
       this.isLoading = true;
       try {
         const response = await getMe();
-        this.me = response?.data;
+        this.me = response?.data?.user || response?.data || response || null;
         return response;
+      } catch (error) {
+        throw error;
       } finally {
         this.isLoading = false;
       }

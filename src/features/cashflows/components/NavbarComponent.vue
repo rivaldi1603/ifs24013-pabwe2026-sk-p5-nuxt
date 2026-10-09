@@ -4,18 +4,24 @@
       <button @click="$emit('toggle-sidebar')" class="text-gray-500 hover:text-gray-700">
         <MenuIcon class="w-6 h-6" />
       </button>
-      <h1 class="text-xl font-bold text-gray-900">Delcom</h1>
+      <div class="flex items-center space-x-2">
+        <img :src="'/logo.svg'" alt="Logo" class="w-6 h-6" />
+        <h1 class="text-xl font-bold text-gray-900">Delcom</h1>
+      </div>
     </div>
-    <div class="hidden lg:block text-xl font-bold text-gray-900">Delcom Cash Flow</div>
+    <div class="hidden lg:flex items-center space-x-3 text-xl font-bold text-gray-900">
+      <img :src="'/logo.svg'" alt="Logo" class="w-7 h-7" />
+      <span>Delcom Cash Flow</span>
+    </div>
     
     <div class="flex items-center space-x-4">
       <div v-if="usersStore.me" class="flex items-center space-x-3">
         <div class="text-right hidden sm:block">
-          <p class="text-sm font-medium text-gray-900">{{ usersStore.me.name }}</p>
+          <p class="text-sm font-medium text-gray-900">{{ usersStore.me.name || usersStore.me.full_name || usersStore.me.username || 'Pengguna' }}</p>
           <p class="text-xs text-gray-500">{{ usersStore.me.email }}</p>
         </div>
         <img 
-          :src="usersStore.me.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(usersStore.me.name)}`" 
+          :src="usersStore.me.photo || usersStore.me.avatar || usersStore.me.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(usersStore.me.name || usersStore.me.full_name || usersStore.me.username || 'User')}`" 
           alt="Avatar" 
           class="w-10 h-10 rounded-full object-cover"
         />

@@ -2,38 +2,52 @@
   <form @submit.prevent="handleLogin" class="space-y-6">
     <div>
       <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
-      <input 
-        id="login-email-input" 
-        type="email" 
-        v-model="email" 
-        @input="onEmailInput"
-        required 
-        class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        placeholder="nama@email.com"
-      />
+      <div class="mt-1 relative rounded-lg shadow-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <MailIcon class="h-5 w-5 text-slate-400" />
+        </div>
+        <input 
+          id="login-email-input" 
+          type="email" 
+          v-model="email" 
+          @input="onEmailInput"
+          required 
+          class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="nama@email.com"
+        />
+      </div>
     </div>
 
     <div>
       <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
-      <input 
-        id="login-password-input" 
-        type="password" 
-        v-model="password" 
-        @input="onPasswordInput"
-        required 
-        class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-        placeholder="••••••••"
-      />
+      <div class="mt-1 relative rounded-lg shadow-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <LockIcon class="h-5 w-5 text-slate-400" />
+        </div>
+        <input 
+          id="login-password-input" 
+          :type="showPassword ? 'text' : 'password'" 
+          v-model="password" 
+          @input="onPasswordInput"
+          required 
+          class="block w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          placeholder="••••••••"
+        />
+        <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
+          <EyeIcon v-if="!showPassword" class="h-5 w-5" />
+          <EyeOffIcon v-else class="h-5 w-5" />
+        </button>
+      </div>
     </div>
 
     <button 
       id="login-submit-button"
       type="submit" 
       :disabled="authStore.isLogin"
-      class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors items-center space-x-2"
     >
-      <span v-if="authStore.isLogin">Memuat...</span>
-      <span v-else>Masuk</span>
+      <Loader2Icon v-if="authStore.isLogin" class="w-4 h-4 animate-spin" />
+      <span>{{ authStore.isLogin ? 'Memuat...' : 'Masuk' }}</span>
     </button>
 
     <div class="text-center text-sm">
@@ -44,16 +58,19 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../states/authStore';
 import { useInput } from '../../../hooks/useInput';
 import { showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
+import { Mail as MailIcon, Lock as LockIcon, Eye as EyeIcon, EyeOff as EyeOffIcon, Loader2 as Loader2Icon } from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
 const [email, onEmailInput] = useInput('');
 const [password, onPasswordInput] = useInput('');
+const showPassword = ref(false);
 
 const handleLogin = async () => {
   try {

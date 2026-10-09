@@ -13,35 +13,80 @@
     </div>
 
     <!-- Cards Stats -->
-    <div v-if="cashFlowsStore.stats" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Total Saldo Kas Bersih</p>
-        <p class="text-2xl font-bold text-slate-900">{{ formatRupiah(cashFlowsStore.stats.total_inflow - cashFlowsStore.stats.total_outflow) }}</p>
+    <div v-if="cashFlowsStore.stats" class="space-y-4">
+      <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6 rounded-2xl shadow-md text-white flex items-center justify-between">
+        <div>
+          <p class="text-blue-100 font-medium mb-1">Total Saldo Kas Bersih</p>
+          <p class="text-3xl sm:text-4xl font-bold">{{ formatRupiah(cashFlowsStore.stats.total_inflow - cashFlowsStore.stats.total_outflow) }}</p>
+        </div>
+        <div class="bg-blue-500/30 p-4 rounded-full hidden sm:block">
+          <WalletIcon class="w-10 h-10 text-blue-50" />
+        </div>
       </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Total Pemasukan (Inflow)</p>
-        <p class="text-2xl font-bold text-emerald-600">{{ formatRupiah(cashFlowsStore.stats.total_inflow) }}</p>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+          <div class="bg-emerald-100 p-3 rounded-xl">
+            <TrendingUpIcon class="w-6 h-6 text-emerald-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-500">Total Pemasukan (Inflow)</p>
+            <p class="text-xl font-bold text-emerald-600">{{ formatRupiah(cashFlowsStore.stats.total_inflow) }}</p>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+          <div class="bg-red-100 p-3 rounded-xl">
+            <TrendingDownIcon class="w-6 h-6 text-red-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-500">Total Pengeluaran (Outflow)</p>
+            <p class="text-xl font-bold text-red-600">{{ formatRupiah(cashFlowsStore.stats.total_outflow) }}</p>
+          </div>
+        </div>
       </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Total Pengeluaran (Outflow)</p>
-        <p class="text-2xl font-bold text-red-600">{{ formatRupiah(cashFlowsStore.stats.total_outflow) }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Saldo Kas Tunai</p>
-        <p class="text-xl font-bold text-slate-800">{{ formatRupiah(cashFlowsStore.stats.cash) }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Saldo Tabungan</p>
-        <p class="text-xl font-bold text-slate-800">{{ formatRupiah(cashFlowsStore.stats.savings) }}</p>
-      </div>
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-        <p class="text-sm font-medium text-slate-500 mb-1">Saldo Pinjaman</p>
-        <p class="text-xl font-bold text-amber-600">{{ formatRupiah(cashFlowsStore.stats.loans) }}</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+          <div class="bg-slate-100 p-3 rounded-xl">
+            <BanknoteIcon class="w-5 h-5 text-slate-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-500">Saldo Tunai</p>
+            <p class="text-lg font-bold text-slate-800">{{ formatRupiah(cashFlowsStore.stats.cash) }}</p>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+          <div class="bg-blue-50 p-3 rounded-xl">
+            <PiggyBankIcon class="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-500">Saldo Tabungan</p>
+            <p class="text-lg font-bold text-slate-800">{{ formatRupiah(cashFlowsStore.stats.savings) }}</p>
+          </div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-4">
+          <div class="bg-amber-50 p-3 rounded-xl">
+            <CreditCardIcon class="w-5 h-5 text-amber-600" />
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-500">Saldo Pinjaman</p>
+            <p class="text-lg font-bold text-slate-800">{{ formatRupiah(cashFlowsStore.stats.loans) }}</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
+      <div>
+        <label class="block text-xs font-medium text-slate-700 mb-1">Cari Label</label>
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+            <SearchIcon class="h-4 w-4 text-slate-400" />
+          </div>
+          <input type="text" v-model="filters.label" @input="fetchData" placeholder="Gaji, dll..." class="block w-full pl-8 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        </div>
+      </div>
       <div>
         <label class="block text-xs font-medium text-slate-700 mb-1">Jenis</label>
         <select v-model="filters.type" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
@@ -98,19 +143,34 @@
                   <span class="text-sm text-slate-900 font-medium">{{ cf.label }}</span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500 uppercase">{{ cf.source }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium" :class="cf.type === 'inflow' ? 'text-emerald-600' : 'text-red-600'">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-medium">{{ sourceLabel(cf.source) }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-bold" :class="cf.type === 'inflow' ? 'text-emerald-600' : 'text-red-600'">
                 {{ cf.type === 'inflow' ? '+' : '-' }} {{ formatRupiah(cf.nominal) }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                <router-link :to="`/cash-flows/${cf.id}`" class="text-blue-600 hover:text-blue-900">Detail</router-link>
-                <button @click="openChangeModal(cf)" class="text-amber-600 hover:text-amber-900">Ubah</button>
-                <button @click="handleDelete(cf.id)" class="text-red-600 hover:text-red-900">Hapus</button>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                <router-link :to="`/cash-flows/${cf.id}`" class="inline-flex p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
+                  <EyeIcon class="w-4 h-4" />
+                </router-link>
+                <button @click="openChangeModal(cf)" class="inline-flex p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Ubah">
+                  <PencilIcon class="w-4 h-4" />
+                </button>
+                <button @click="handleDelete(cf.id)" class="inline-flex p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                  <Trash2Icon class="w-4 h-4" />
+                </button>
               </td>
             </tr>
             <tr v-if="cashFlowsStore.cashFlows.length === 0">
-              <td colspan="5" class="px-6 py-8 text-center text-slate-500">
-                Tidak ada data arus kas
+              <td colspan="5" class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <div class="bg-slate-100 p-4 rounded-full mb-4">
+                    <ReceiptIcon class="w-8 h-8 text-slate-400" />
+                  </div>
+                  <h3 class="text-lg font-medium text-slate-900 mb-1">Belum ada transaksi</h3>
+                  <p class="text-slate-500 mb-4">Catat pemasukan atau pengeluaran pertamamu hari ini.</p>
+                  <button @click="isAddModalOpen = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
+                    + Tambah Transaksi
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -129,6 +189,19 @@ import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { formatRupiah, formatDate, showConfirmDialog, showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
 import AddModal from '../modals/AddModal.vue';
 import ChangeModal from '../modals/ChangeModal.vue';
+import { 
+  Eye as EyeIcon, 
+  Pencil as PencilIcon, 
+  Trash2 as Trash2Icon, 
+  Wallet as WalletIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Banknote as BanknoteIcon,
+  PiggyBank as PiggyBankIcon,
+  CreditCard as CreditCardIcon,
+  Search as SearchIcon,
+  Receipt as ReceiptIcon
+} from 'lucide-vue-next';
 
 const cashFlowsStore = useCashFlowsStore();
 
@@ -137,11 +210,17 @@ const isChangeModalOpen = ref(false);
 const selectedCashFlow = ref(null);
 
 const filters = reactive({
+  label: '',
   type: '',
   source: '',
   start_date: '',
   end_date: ''
 });
+
+const sourceLabel = (src: string) => {
+  const map: Record<string, string> = { cash: 'Tunai', savings: 'Tabungan', loans: 'Pinjaman' };
+  return map[src] || src;
+};
 
 const fetchData = async () => {
   await cashFlowsStore.asyncGetCashFlows(filters);
@@ -152,6 +231,7 @@ onMounted(() => {
 });
 
 const resetFilters = () => {
+  filters.label = '';
   filters.type = '';
   filters.source = '';
   filters.start_date = '';

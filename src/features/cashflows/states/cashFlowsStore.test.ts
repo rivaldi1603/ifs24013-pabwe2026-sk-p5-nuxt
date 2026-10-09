@@ -87,4 +87,33 @@ describe('cashFlowsStore', () => {
     await store.asyncDeleteAllCashFlows();
     expect(store.isCashFlowDeletedAll).toBe(true);
   });
+
+  // Error paths
+  it('handles errors in asyncAddCashFlow', async () => {
+    const store = useCashFlowsStore();
+    (cashFlowApi.addCashFlow as any).mockRejectedValue(new Error('error'));
+    await expect(store.asyncAddCashFlow({})).rejects.toThrow('error');
+    expect(store.isCashFlowAdd).toBe(false);
+  });
+
+  it('handles errors in asyncUpdateCashFlow', async () => {
+    const store = useCashFlowsStore();
+    (cashFlowApi.updateCashFlow as any).mockRejectedValue(new Error('error'));
+    await expect(store.asyncUpdateCashFlow('1', {})).rejects.toThrow('error');
+    expect(store.isCashFlowChange).toBe(false);
+  });
+
+  it('handles errors in asyncDeleteCashFlow', async () => {
+    const store = useCashFlowsStore();
+    (cashFlowApi.deleteCashFlow as any).mockRejectedValue(new Error('error'));
+    await expect(store.asyncDeleteCashFlow('1')).rejects.toThrow('error');
+    expect(store.isCashFlowDelete).toBe(false);
+  });
+
+  it('handles errors in asyncDeleteAllCashFlows', async () => {
+    const store = useCashFlowsStore();
+    (cashFlowApi.deleteAllCashFlows as any).mockRejectedValue(new Error('error'));
+    await expect(store.asyncDeleteAllCashFlows()).rejects.toThrow('error');
+    expect(store.isCashFlowDeleteAll).toBe(false);
+  });
 });

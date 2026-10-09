@@ -29,7 +29,7 @@ describe('HomePage', () => {
     await nextTick();
     const btns = wrapper.findAll('button');
     // find delete button
-    const deleteBtn = btns.find(b => b.text() === 'Hapus');
+    const deleteBtn = btns.find(b => b.attributes('title') === 'Hapus');
     await deleteBtn?.trigger('click');
     expect(store.asyncDeleteCashFlow).toHaveBeenCalledWith('1');
   });
@@ -66,7 +66,67 @@ describe('HomePage', () => {
     await addBtn?.trigger('click');
     
     // Change modal
-    const changeBtn = wrapper.findAll('button').find(b => b.text() === 'Ubah');
+    const changeBtn = wrapper.findAll('button').find(b => b.attributes('title') === 'Ubah');
     await changeBtn?.trigger('click');
+  });
+
+  it('handles filters input', async () => {
+    const { wrapper } = renderWithProviders(HomePage);
+    const store = useCashFlowsStore();
+    store.asyncGetCashFlows = vi.fn().mockResolvedValue({});
+
+    const labelInput = wrapper.find('input[type="text"]');
+    await labelInput.setValue('test');
+    await labelInput.trigger('input');
+
+    const selects = wrapper.findAll('select');
+    await selects[0].setValue('inflow');
+    await selects[0].trigger('change');
+    
+    await selects[1].setValue('cash');
+    await selects[1].trigger('change');
+
+    const dateInputs = wrapper.findAll('input[type="date"]');
+    await dateInputs[0].setValue('2023-01-01');
+    await dateInputs[0].trigger('change');
+
+    await dateInputs[1].setValue('2023-12-31');
+    await dateInputs[1].trigger('change');
+
+    expect(store.asyncGetCashFlows).toHaveBeenCalled();
+  });
+
+  it('handles empty state add button', async () => {
+    const { wrapper } = renderWithProviders(HomePage);
+    const store = useCashFlowsStore();
+    store.cashFlows = []; // empty state
+    await nextTick();
+    
+    const addBtns = wrapper.findAll('button').filter(b => b.text().includes('Tambah Transaksi'));
+    if (addBtns.length > 1) {
+      await addBtns[1].trigger('click');
+    }
+  });
+
+  it('handles delete error', async () => {
+    const { wrapper } = renderWithProviders(HomePage);
+    const store = useCashFlowsStore();
+    store.cashFlows = [{ id: '1', type: 'inflow', source: 'cash', nominal: 1000, label: 'A' }];
+    store.asyncDeleteCashFlow = vi.fn().mockRejectedValue(new Error('error'));
+    
+    await nextTick();
+    const deleteBtn = wrapper.findAll('button').find(b => b.attributes('title') === 'Hapus');
+    await deleteBtn?.trigger('click');
+    expect(store.asyncDeleteCashFlow).toHaveBeenCalled();
+  });
+
+  it('handles reset all error', async () => {
+    const { wrapper } = renderWithProviders(HomePage);
+    const store = useCashFlowsStore();
+    store.asyncDeleteAllCashFlows = vi.fn().mockRejectedValue(new Error('error'));
+    
+    const resetBtn = wrapper.findAll('button').find(b => b.text() === 'Reset Semua');
+    await resetBtn?.trigger('click');
+    expect(store.asyncDeleteAllCashFlows).toHaveBeenCalled();
   });
 });

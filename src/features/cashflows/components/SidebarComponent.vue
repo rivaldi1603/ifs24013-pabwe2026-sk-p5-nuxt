@@ -1,8 +1,11 @@
 <template>
   <aside class="w-64 bg-slate-900 text-white flex flex-col h-full border-r border-slate-800">
-    <div class="p-6">
-      <h2 class="text-2xl font-bold text-white tracking-tight">Delcom</h2>
-      <p class="text-sm text-slate-400 mt-1">Cash Flow App</p>
+    <div class="p-6 flex items-center space-x-3">
+      <img :src="'/logo.svg'" alt="Logo" class="w-8 h-8 drop-shadow" />
+      <div>
+        <h2 class="text-2xl font-bold text-white tracking-tight">Delcom</h2>
+        <p class="text-xs text-slate-400 mt-1">Cash Flow App</p>
+      </div>
     </div>
     <nav class="flex-1 px-4 space-y-2 mt-4">
       <router-link 

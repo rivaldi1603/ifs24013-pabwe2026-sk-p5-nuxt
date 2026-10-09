@@ -59,4 +59,19 @@ describe('usersStore', () => {
     const res = await store.asyncUpdatePassword({});
     expect(res).toBe('ok');
   });
+
+  it('handles errors in asyncGetUsers', async () => {
+    const store = useUsersStore();
+    (userApi.getUsers as any).mockRejectedValue(new Error('fail'));
+    await expect(store.asyncGetUsers()).rejects.toThrow('fail');
+    expect(store.users).toEqual([]);
+    expect(store.isLoading).toBe(false);
+  });
+
+  it('handles errors in asyncGetMe', async () => {
+    const store = useUsersStore();
+    (userApi.getMe as any).mockRejectedValue(new Error('fail'));
+    await expect(store.asyncGetMe()).rejects.toThrow('fail');
+    expect(store.isLoading).toBe(false);
+  });
 });
