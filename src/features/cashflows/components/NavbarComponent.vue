@@ -1,8 +1,8 @@
 <template>
-  <nav class="bg-white shadow-sm px-6 py-4 flex justify-between items-center z-10 relative">
+  <nav aria-label="Navigasi Utama" class="bg-white shadow-sm px-6 py-4 flex justify-between items-center z-10 relative">
     <div class="flex items-center space-x-4 lg:hidden">
-      <button @click="$emit('toggle-sidebar')" class="text-gray-500 hover:text-gray-700">
-        <MenuIcon class="w-6 h-6" />
+      <button @click="$emit('toggle-sidebar')" class="text-gray-500 hover:text-gray-700" aria-label="Buka menu">
+        <MenuIcon class="w-6 h-6" aria-hidden="true" />
       </button>
       <div class="flex items-center space-x-2">
         <img :src="'/logo.svg'" alt="Logo" class="w-6 h-6" />
@@ -26,8 +26,8 @@
           class="w-10 h-10 rounded-full object-cover"
         />
       </div>
-      <button @click="handleLogout" class="text-gray-500 hover:text-red-600 transition-colors">
-        <LogOutIcon class="w-5 h-5" />
+      <button @click="handleLogout" class="text-gray-500 hover:text-red-600 transition-colors" aria-label="Keluar">
+        <LogOutIcon class="w-5 h-5" aria-hidden="true" />
       </button>
     </div>
   </nav>

@@ -32,12 +32,12 @@
         <form @submit.prevent="handleUpdateBio" class="space-y-4">
           <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Informasi Dasar</h3>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-            <input type="text" v-model="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required />
+            <label for="profile-name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+            <input id="profile-name" type="text" v-model="name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" required />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Email (Tidak dapat diubah)</label>
-            <input type="email" :value="usersStore.me.email" disabled class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 shadow-sm sm:text-sm" />
+            <label for="profile-email" class="block text-sm font-medium text-gray-700">Email (Tidak dapat diubah)</label>
+            <input id="profile-email" type="email" :value="usersStore.me.email" disabled class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500 shadow-sm sm:text-sm" />
           </div>
           <div class="flex justify-end">
             <button type="submit" :disabled="isUpdatingBio" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center space-x-2">
@@ -50,12 +50,12 @@
         <form @submit.prevent="handleUpdatePassword" class="space-y-4 mt-8">
           <h3 class="text-lg font-medium text-gray-900 border-b pb-2">Ubah Kata Sandi</h3>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Kata Sandi Baru</label>
+            <label for="profile-password" class="block text-sm font-medium text-gray-700">Kata Sandi Baru</label>
             <div class="relative mt-1">
-              <input :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Masukkan kata sandi baru" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10" required />
-              <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600">
-                <EyeIcon v-if="!showPassword" class="w-5 h-5" />
-                <EyeOffIcon v-else class="w-5 h-5" />
+              <input id="profile-password" :type="showPassword ? 'text' : 'password'" v-model="password" placeholder="Masukkan kata sandi baru" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-10" required />
+              <button type="button" :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                <EyeIcon v-if="!showPassword" class="w-5 h-5" aria-hidden="true" />
+                <EyeOffIcon v-else class="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
             

@@ -13,7 +13,7 @@
     <div class="flex-1 flex flex-col h-screen overflow-hidden relative z-10">
       <NavbarComponent @toggle-sidebar="isSidebarOpen = !isSidebarOpen" />
       
-      <main class="flex-1 overflow-y-auto p-6 scroll-smooth">
+      <main tabindex="0" aria-label="Konten utama" class="flex-1 overflow-y-auto p-6 scroll-smooth focus:outline-none">
         <router-view />
       </main>
     </div>

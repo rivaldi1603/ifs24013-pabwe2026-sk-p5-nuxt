@@ -9,18 +9,18 @@ vi.mock('sweetalert2', () => ({
 }));
 
 describe('toolsHelper', () => {
-  it('showSuccessDialog calls Swal.fire', () => {
-    showSuccessDialog('Title', 'Text');
+  it('showSuccessDialog calls Swal.fire', async () => {
+    await showSuccessDialog('Title', 'Text');
     expect(Swal.fire).toHaveBeenCalledWith(expect.objectContaining({ icon: 'success' }));
   });
   
-  it('showErrorDialog calls Swal.fire', () => {
-    showErrorDialog('Title', 'Text');
+  it('showErrorDialog calls Swal.fire', async () => {
+    await showErrorDialog('Title', 'Text');
     expect(Swal.fire).toHaveBeenCalledWith(expect.objectContaining({ icon: 'error' }));
   });
   
-  it('showConfirmDialog calls Swal.fire', () => {
-    showConfirmDialog('Title', 'Text');
+  it('showConfirmDialog calls Swal.fire', async () => {
+    await showConfirmDialog('Title', 'Text');
     expect(Swal.fire).toHaveBeenCalledWith(expect.objectContaining({ icon: 'warning' }));
   });
   

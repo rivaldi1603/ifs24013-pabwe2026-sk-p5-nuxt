@@ -6,7 +6,7 @@
         <button @click="isAddModalOpen = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm">
           + Tambah Transaksi
         </button>
-        <button @click="handleResetAll" class="px-4 py-2 bg-red-100 text-red-600 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
+        <button @click="handleResetAll" class="px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium hover:bg-red-200 transition-colors">
           Reset Semua
         </button>
       </div>
@@ -79,25 +79,25 @@
     <!-- Filters -->
     <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-4">
       <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Cari Label</label>
+        <label for="filter-label" class="block text-xs font-medium text-slate-700 mb-1">Cari Label</label>
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
             <SearchIcon class="h-4 w-4 text-slate-400" />
           </div>
-          <input type="text" v-model="filters.label" @input="fetchData" placeholder="Gaji, dll..." class="block w-full pl-8 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+          <input id="filter-label" type="text" v-model="filters.label" @input="fetchData" placeholder="Gaji, dll..." class="block w-full pl-8 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
         </div>
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Jenis</label>
-        <select v-model="filters.type" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <label for="filter-type" class="block text-xs font-medium text-slate-700 mb-1">Jenis</label>
+        <select id="filter-type" v-model="filters.type" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
           <option value="">Semua</option>
           <option value="inflow">Inflow</option>
           <option value="outflow">Outflow</option>
         </select>
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Sumber</label>
-        <select v-model="filters.source" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+        <label for="filter-source" class="block text-xs font-medium text-slate-700 mb-1">Sumber</label>
+        <select id="filter-source" v-model="filters.source" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
           <option value="">Semua</option>
           <option value="cash">Tunai</option>
           <option value="savings">Tabungan</option>
@@ -105,12 +105,12 @@
         </select>
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Mulai Tanggal</label>
-        <input type="date" v-model="filters.start_date" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        <label for="filter-start" class="block text-xs font-medium text-slate-700 mb-1">Mulai Tanggal</label>
+        <input id="filter-start" type="date" v-model="filters.start_date" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
       </div>
       <div>
-        <label class="block text-xs font-medium text-slate-700 mb-1">Sampai Tanggal</label>
-        <input type="date" v-model="filters.end_date" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+        <label for="filter-end" class="block text-xs font-medium text-slate-700 mb-1">Sampai Tanggal</label>
+        <input id="filter-end" type="date" v-model="filters.end_date" @change="fetchData" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
       </div>
       <div class="flex items-end">
         <button @click="resetFilters" class="w-full px-4 py-2 bg-slate-100 text-slate-700 rounded-md text-sm font-medium hover:bg-slate-200 transition-colors">
@@ -148,14 +148,14 @@
                 {{ cf.type === 'inflow' ? '+' : '-' }} {{ formatRupiah(cf.nominal) }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
-                <router-link :to="`/cash-flows/${cf.id}`" class="inline-flex p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail">
-                  <EyeIcon class="w-4 h-4" />
+                <router-link :to="`/cash-flows/${cf.id}`" class="inline-flex p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Detail" aria-label="Detail">
+                  <EyeIcon class="w-4 h-4" aria-hidden="true" />
                 </router-link>
-                <button @click="openChangeModal(cf)" class="inline-flex p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Ubah">
-                  <PencilIcon class="w-4 h-4" />
+                <button @click="openChangeModal(cf)" class="inline-flex p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Ubah" aria-label="Ubah transaksi">
+                  <PencilIcon class="w-4 h-4" aria-hidden="true" />
                 </button>
-                <button @click="handleDelete(cf.id)" class="inline-flex p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
-                  <Trash2Icon class="w-4 h-4" />
+                <button @click="handleDelete(cf.id)" class="inline-flex p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus" aria-label="Hapus transaksi">
+                  <Trash2Icon class="w-4 h-4" aria-hidden="true" />
                 </button>
               </td>
             </tr>

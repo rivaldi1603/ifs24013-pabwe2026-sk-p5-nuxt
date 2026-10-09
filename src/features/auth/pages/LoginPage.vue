@@ -1,7 +1,7 @@
 <template>
   <form @submit.prevent="handleLogin" class="space-y-6">
     <div>
-      <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
+      <label for="login-email-input" class="block text-sm font-medium text-slate-700">Email</label>
       <div class="mt-1 relative rounded-lg shadow-sm">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <MailIcon class="h-5 w-5 text-slate-400" />
@@ -19,7 +19,7 @@
     </div>
 
     <div>
-      <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+      <label for="login-password-input" class="block text-sm font-medium text-slate-700">Password</label>
       <div class="mt-1 relative rounded-lg shadow-sm">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
           <LockIcon class="h-5 w-5 text-slate-400" />
@@ -33,9 +33,9 @@
           class="block w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           placeholder="••••••••"
         />
-        <button type="button" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none">
-          <EyeIcon v-if="!showPassword" class="h-5 w-5" />
-          <EyeOffIcon v-else class="h-5 w-5" />
+        <button type="button" :aria-label="showPassword ? 'Sembunyikan password' : 'Tampilkan password'" @click="showPassword = !showPassword" class="absolute inset-y-0 right-0 px-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+          <EyeIcon v-if="!showPassword" class="h-5 w-5" aria-hidden="true" />
+          <EyeOffIcon v-else class="h-5 w-5" aria-hidden="true" />
         </button>
       </div>
     </div>
