@@ -1,10 +1,11 @@
 import { describe, it, expect, vi } from 'vitest';
-import { renderWithProviders } from '../../../test-utils';
+import { createMockPinia, renderWithProviders } from '../../../test-utils';
 import HomePage from './HomePage.vue';
 import AddModal from '../modals/AddModal.vue';
 import ChangeModal from '../modals/ChangeModal.vue';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { nextTick } from 'vue';
+import { flushPromises } from '@vue/test-utils';
 import { showConfirmDialog } from '../../../helpers/toolsHelper';
 
 vi.mock('../../../helpers/toolsHelper', () => ({
@@ -69,22 +70,31 @@ describe('HomePage', () => {
   });
 
   it('opens modals', async () => {
-    const { wrapper } = renderWithProviders(HomePage);
-    const store = useCashFlowsStore();
+    const pinia = createMockPinia();
+    const store = useCashFlowsStore(pinia);
+    store.asyncGetCashFlows = vi.fn().mockResolvedValue({});
     store.cashFlows = [
       { id: '1', type: 'inflow', source: 'cash', nominal: 1000, label: 'A' },
       { id: '2', type: 'outflow', source: 'unknown', nominal: 2000, label: 'B' }
     ];
+    
+    const { wrapper } = renderWithProviders(HomePage, {
+      global: { plugins: [pinia] }
+    });
     
     await nextTick();
     
     // Add modal
     const addBtn = wrapper.findAll('button').find(b => b.text().includes('+ Tambah Transaksi'));
     await addBtn?.trigger('click');
+    await flushPromises();
     
     // Change modal
     const changeBtns = wrapper.findAll('button').filter(b => b.attributes('title') === 'Ubah');
-    if (changeBtns.length > 0) await changeBtns[0].trigger('click');
+    if (changeBtns.length > 0) {
+      await changeBtns[0].trigger('click');
+      await flushPromises();
+    }
 
     // trigger close on modals
     const addModal = wrapper.findComponent(AddModal);
@@ -141,6 +151,7 @@ describe('HomePage', () => {
     const addBtns = wrapper.findAll('button').filter(b => b.text().includes('Tambah Transaksi'));
     if (addBtns.length > 1) {
       await addBtns[1].trigger('click');
+      await flushPromises();
     }
   });
 

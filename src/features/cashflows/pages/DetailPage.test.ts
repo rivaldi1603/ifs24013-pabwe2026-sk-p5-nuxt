@@ -1,8 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderWithProviders } from '../../../test-utils';
 import DetailPage from './DetailPage.vue';
+import ChangeModal from '../modals/ChangeModal.vue';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { nextTick } from 'vue';
+import { flushPromises } from '@vue/test-utils';
 import { showConfirmDialog } from '../../../helpers/toolsHelper';
 
 vi.mock('../../../helpers/toolsHelper', () => ({
@@ -75,15 +77,15 @@ describe('DetailPage', () => {
     await new Promise(r => setTimeout(r, 10));
 
     const changeBtn = wrapper.findAll('button').find(b => b.text() === 'Ubah Transaksi');
-    if (changeBtn) await changeBtn.trigger('click');
-
-    // trigger close on modal
-    const ChangeModal = (await import('../modals/ChangeModal.vue')).default;
-    const modal = wrapper.findComponent(ChangeModal);
-    if (modal.exists()) {
-      await modal.vm.$emit('close');
-      await modal.vm.$emit('refresh');
+    if (changeBtn) {
+      await changeBtn.trigger('click');
+      await flushPromises();
     }
+
+    const modal = wrapper.findComponent(ChangeModal);
+    expect(modal.exists()).toBe(true);
+    await modal.vm.$emit('close');
+    await modal.vm.$emit('refresh');
 
     // trigger router link
     const link = wrapper.findComponent({ name: 'RouterLink' });

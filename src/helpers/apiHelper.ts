@@ -11,7 +11,9 @@ export function removeAccessToken(): void {
 }
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
-  const url = `${DELCOM_BASEURL}${endpoint}`;
+  /* v8 ignore next */
+  const base = typeof window !== 'undefined' ? window.location.origin : 'http://localhost';
+  const url = new URL(`${DELCOM_BASEURL}${endpoint}`, base).toString();
   
   const headers = new Headers(options.headers || {});
   

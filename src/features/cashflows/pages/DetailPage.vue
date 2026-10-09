@@ -58,6 +58,7 @@
     </div>
 
     <ChangeModal 
+      v-if="isChangeModalOpen"
       :is-open="isChangeModalOpen" 
       :cash-flow-data="cashFlowsStore.cashFlow" 
       @close="isChangeModalOpen = false" 
@@ -71,7 +72,8 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { formatRupiah, formatDate, showConfirmDialog, showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
-import ChangeModal from '../modals/ChangeModal.vue';
+import { defineAsyncComponent } from 'vue';
+const ChangeModal = defineAsyncComponent(() => import('../modals/ChangeModal.vue'));
 import { ArrowLeft as ArrowLeftIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-vue-next';
 
 const route = useRoute();

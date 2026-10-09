@@ -11,6 +11,18 @@ export default defineNuxtConfig({
   // Disable SSR for SPA mode (client-side routing and storage)
   ssr: false,
 
+  routeRules: {
+    "/delcom/**": { proxy: "https://open-api.delcom.org/api/v1/**" },
+    "/**": {
+      headers: {
+        "X-Frame-Options": "DENY",
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+      },
+    },
+  },
+
   // Let Nuxt look into src/ for application source files
   srcDir: "src/",
 

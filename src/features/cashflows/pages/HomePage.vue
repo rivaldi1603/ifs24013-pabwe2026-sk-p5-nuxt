@@ -178,17 +178,18 @@
       </div>
     </div>
 
-    <AddModal :is-open="isAddModalOpen" @close="isAddModalOpen = false" @refresh="fetchData" />
-    <ChangeModal :is-open="isChangeModalOpen" :cash-flow-data="selectedCashFlow" @close="isChangeModalOpen = false" @refresh="fetchData" />
+    <AddModal v-if="isAddModalOpen" :is-open="isAddModalOpen" @close="isAddModalOpen = false" @refresh="fetchData" />
+    <ChangeModal v-if="isChangeModalOpen" :is-open="isChangeModalOpen" :cash-flow-data="selectedCashFlow" @close="isChangeModalOpen = false" @refresh="fetchData" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, defineAsyncComponent } from 'vue';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { formatRupiah, formatDate, showConfirmDialog, showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
-import AddModal from '../modals/AddModal.vue';
-import ChangeModal from '../modals/ChangeModal.vue';
+
+const AddModal = defineAsyncComponent(() => import('../modals/AddModal.vue'));
+const ChangeModal = defineAsyncComponent(() => import('../modals/ChangeModal.vue'));
 import { 
   Eye as EyeIcon, 
   Pencil as PencilIcon, 
