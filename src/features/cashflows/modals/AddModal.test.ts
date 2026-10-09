@@ -27,10 +27,15 @@ describe('AddModal', () => {
   it('handles submit error', async () => {
     const { wrapper } = renderWithProviders(AddModal, { props: { isOpen: true } });
     const store = useCashFlowsStore();
-    store.asyncAddCashFlow = vi.fn().mockRejectedValue(new Error('fail'));
     
+    // with message
+    store.asyncAddCashFlow = vi.fn().mockRejectedValue(new Error('fail'));
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncAddCashFlow).toHaveBeenCalled();
+
+    // without message
+    store.asyncAddCashFlow = vi.fn().mockRejectedValue({});
+    await wrapper.find('form').trigger('submit.prevent');
   });
 
   it('handles close', async () => {
@@ -44,6 +49,10 @@ describe('AddModal', () => {
     const { wrapper } = renderWithProviders(AddModal, { props: { isOpen: true } });
     const inputs = wrapper.findAll('input');
     await inputs[1].setValue('1000');
+    await inputs[1].trigger('input');
+
+    // trigger empty/non-digit input
+    await inputs[1].setValue('abc');
     await inputs[1].trigger('input');
 
     await inputs[0].setValue('label');

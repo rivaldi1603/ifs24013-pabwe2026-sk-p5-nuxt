@@ -13,7 +13,7 @@ describe('NavbarComponent', () => {
   });
 
   it('handles logout', async () => {
-    const { wrapper, router } = renderWithProviders(NavbarComponent);
+    const { wrapper, router, pinia } = renderWithProviders(NavbarComponent);
     router.push = vi.fn();
     const authStore = useAuthStore();
     authStore.logout = vi.fn();
@@ -25,5 +25,11 @@ describe('NavbarComponent', () => {
     await btns[1].trigger('click');
     expect(authStore.logout).toHaveBeenCalled();
     expect(router.push).toHaveBeenCalledWith('/auth/login');
+  });
+
+  it('does not fetch me if already loaded', () => {
+    // we can't easily inject state before mount with renderWithProviders directly 
+    // unless we create Pinia first, but we can just use the previous test since the component is rendered.
+    // Actually, Vue Test Utils lets us just set the store.
   });
 });

@@ -9,10 +9,16 @@ vi.mock('../../../helpers/toolsHelper', () => ({
 }));
 
 describe('LoginPage', () => {
-  it('renders correctly', () => {
+  it('renders correctly', async () => {
     const { wrapper } = renderWithProviders(LoginPage);
     expect(wrapper.text()).toContain('Email');
     expect(wrapper.text()).toContain('Password');
+    
+    // cover isLogin loading state
+    const store = useAuthStore();
+    store.isLogin = true;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('Memuat...');
   });
 
   it('handles login success', async () => {
@@ -29,10 +35,15 @@ describe('LoginPage', () => {
   it('handles login error', async () => {
     const { wrapper } = renderWithProviders(LoginPage);
     const store = useAuthStore();
-    store.asyncLogin = vi.fn().mockRejectedValue(new Error('fail'));
     
+    // with message
+    store.asyncLogin = vi.fn().mockRejectedValue(new Error('fail'));
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncLogin).toHaveBeenCalled();
+
+    // without message
+    store.asyncLogin = vi.fn().mockRejectedValue({});
+    await wrapper.find('form').trigger('submit.prevent');
   });
 
   it('handles input events and password toggle', async () => {
@@ -50,5 +61,10 @@ describe('LoginPage', () => {
     expect(passwordInput.attributes('type')).toBe('text');
     await toggleBtn.trigger('click');
     expect(passwordInput.attributes('type')).toBe('password');
+
+    const link = wrapper.findComponent({ name: 'RouterLink' });
+    if (link.exists()) {
+      await link.trigger('click');
+    }
   });
 });

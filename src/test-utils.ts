@@ -21,8 +21,6 @@ export function renderWithProviders(component: any, options: any = {}) {
       global: {
         plugins: [pinia, router],
         stubs: {
-          RouterLink: true,
-          RouterView: true,
           NuxtPage: true,
           ...options.global?.stubs
         },

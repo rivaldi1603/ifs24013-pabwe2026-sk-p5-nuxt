@@ -11,7 +11,8 @@ vi.mock('../../../helpers/toolsHelper', () => ({
 
 describe('ChangeModal', () => {
   it('populates fields', async () => {
-    const { wrapper } = renderWithProviders(ChangeModal, { props: { isOpen: true, cashFlowData: { id: '1', type: 'inflow' } } });
+    const { wrapper } = renderWithProviders(ChangeModal, { props: { isOpen: false, cashFlowData: null } });
+    await wrapper.setProps({ isOpen: true, cashFlowData: { id: '1', type: 'inflow', nominal: 0 } });
     await nextTick();
     expect(wrapper.text()).toContain('Ubah Pencatatan Arus Kas');
   });
@@ -29,10 +30,15 @@ describe('ChangeModal', () => {
   it('handles submit error', async () => {
     const { wrapper } = renderWithProviders(ChangeModal, { props: { isOpen: true, cashFlowData: { id: '1' } } });
     const store = useCashFlowsStore();
-    store.asyncUpdateCashFlow = vi.fn().mockRejectedValue(new Error('fail'));
     
+    // with message
+    store.asyncUpdateCashFlow = vi.fn().mockRejectedValue(new Error('fail'));
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncUpdateCashFlow).toHaveBeenCalled();
+
+    // without message
+    store.asyncUpdateCashFlow = vi.fn().mockRejectedValue({});
+    await wrapper.find('form').trigger('submit.prevent');
   });
 
   it('handles close', async () => {
@@ -48,6 +54,9 @@ describe('ChangeModal', () => {
     
     const inputs = wrapper.findAll('input');
     await inputs[1].setValue('2000');
+    await inputs[1].trigger('input');
+
+    await inputs[1].setValue('abc');
     await inputs[1].trigger('input');
 
     await inputs[0].setValue('label2');

@@ -9,9 +9,15 @@ vi.mock('../../../helpers/toolsHelper', () => ({
 }));
 
 describe('RegisterPage', () => {
-  it('renders correctly', () => {
+  it('renders correctly', async () => {
     const { wrapper } = renderWithProviders(RegisterPage);
     expect(wrapper.text()).toContain('Nama Lengkap');
+
+    // cover isRegister loading state
+    const store = useAuthStore();
+    store.isRegister = true;
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('Memuat...');
   });
 
   it('handles register success', async () => {
@@ -28,10 +34,15 @@ describe('RegisterPage', () => {
   it('handles register error', async () => {
     const { wrapper } = renderWithProviders(RegisterPage);
     const store = useAuthStore();
-    store.asyncRegister = vi.fn().mockRejectedValue(new Error('fail'));
     
+    // with message
+    store.asyncRegister = vi.fn().mockRejectedValue(new Error('fail'));
     await wrapper.find('form').trigger('submit.prevent');
     expect(store.asyncRegister).toHaveBeenCalled();
+
+    // without message
+    store.asyncRegister = vi.fn().mockRejectedValue({});
+    await wrapper.find('form').trigger('submit.prevent');
   });
 
   it('handles input events and password toggle', async () => {
@@ -53,5 +64,10 @@ describe('RegisterPage', () => {
     expect(passwordInput.attributes('type')).toBe('text');
     await toggleBtn.trigger('click');
     expect(passwordInput.attributes('type')).toBe('password');
+
+    const link = wrapper.findComponent({ name: 'RouterLink' });
+    if (link.exists()) {
+      await link.trigger('click');
+    }
   });
 });

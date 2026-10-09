@@ -12,6 +12,7 @@ vi.mock('../api/cashFlowApi', () => ({
   getCashFlowLabels: vi.fn(),
   getDailyStats: vi.fn(),
   getMonthlyStats: vi.fn(),
+  getStats: vi.fn(),
   deleteAllCashFlows: vi.fn(),
 }));
 
@@ -24,6 +25,18 @@ describe('cashFlowsStore', () => {
     await store.asyncGetCashFlows();
     expect(store.cashFlows).toEqual([]);
     expect(store.stats).toEqual({});
+
+    // test other branches
+    (cashFlowApi.getCashFlows as any).mockResolvedValue({ data: { cash_flows: ['1'], summary: null } });
+    await store.asyncGetCashFlows();
+    expect(store.cashFlows).toEqual(['1']);
+
+    (cashFlowApi.getCashFlows as any).mockResolvedValue({ data: ['2'], summary: {} });
+    await store.asyncGetCashFlows();
+    expect(store.cashFlows).toEqual(['2']);
+    
+    (cashFlowApi.getCashFlows as any).mockResolvedValue({ summary: {} });
+    await store.asyncGetCashFlows();
   });
   it('asyncGetCashFlows handles missing data', async () => {
     const store = useCashFlowsStore();
@@ -37,6 +50,23 @@ describe('cashFlowsStore', () => {
     (cashFlowApi.getCashFlowDetail as any).mockResolvedValue({ data: { id: '1' } });
     await store.asyncGetCashFlowDetail('1');
     expect(store.cashFlow).toEqual({ id: '1' });
+    
+    // test other branches
+    (cashFlowApi.getCashFlowDetail as any).mockResolvedValue({ data: { cash_flow: { id: '2' } } });
+    await store.asyncGetCashFlowDetail('2');
+    expect(store.cashFlow).toEqual({ id: '2' });
+
+    (cashFlowApi.getCashFlowDetail as any).mockResolvedValue({ data: { item: { id: '3' } } });
+    await store.asyncGetCashFlowDetail('3');
+    expect(store.cashFlow).toEqual({ id: '3' });
+
+    (cashFlowApi.getCashFlowDetail as any).mockResolvedValue({ id: '4' });
+    await store.asyncGetCashFlowDetail('4');
+    expect(store.cashFlow).toEqual({ id: '4' });
+    
+    (cashFlowApi.getCashFlowDetail as any).mockResolvedValue(null);
+    await store.asyncGetCashFlowDetail('5');
+    expect(store.cashFlow).toBeNull();
   });
 
   it('asyncAddCashFlow works', async () => {
@@ -65,6 +95,10 @@ describe('cashFlowsStore', () => {
     (cashFlowApi.getCashFlowLabels as any).mockResolvedValue({ data: ['a'] });
     await store.asyncGetCashFlowLabels();
     expect(store.labels).toEqual(['a']);
+    
+    (cashFlowApi.getCashFlowLabels as any).mockResolvedValue(null);
+    await store.asyncGetCashFlowLabels();
+    expect(store.labels).toEqual([]);
   });
 
   it('asyncGetDailyStats works', async () => {
@@ -72,6 +106,10 @@ describe('cashFlowsStore', () => {
     (cashFlowApi.getDailyStats as any).mockResolvedValue({ data: ['a'] });
     await store.asyncGetDailyStats();
     expect(store.dailyStats).toEqual(['a']);
+
+    (cashFlowApi.getDailyStats as any).mockResolvedValue(null);
+    await store.asyncGetDailyStats();
+    expect(store.dailyStats).toEqual([]);
   });
 
   it('asyncGetMonthlyStats works', async () => {
@@ -79,7 +117,13 @@ describe('cashFlowsStore', () => {
     (cashFlowApi.getMonthlyStats as any).mockResolvedValue({ data: ['a'] });
     await store.asyncGetMonthlyStats();
     expect(store.monthlyStats).toEqual(['a']);
+
+    (cashFlowApi.getMonthlyStats as any).mockResolvedValue(null);
+    await store.asyncGetMonthlyStats();
+    expect(store.monthlyStats).toEqual([]);
   });
+
+
 
   it('asyncDeleteAllCashFlows works', async () => {
     const store = useCashFlowsStore();

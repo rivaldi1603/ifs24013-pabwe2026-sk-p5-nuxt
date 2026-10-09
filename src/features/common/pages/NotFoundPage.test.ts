@@ -7,7 +7,7 @@ describe('NotFoundPage', () => {
     const { wrapper } = renderWithProviders(NotFoundPage);
     expect(wrapper.text()).toContain('404');
     
-    const link = wrapper.find('a');
+    const link = wrapper.findComponent({ name: 'RouterLink' });
     if (link.exists()) {
       await link.trigger('click');
     }

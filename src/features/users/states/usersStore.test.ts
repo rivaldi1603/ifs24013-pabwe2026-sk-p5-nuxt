@@ -18,9 +18,21 @@ describe('usersStore', () => {
 
   it('asyncGetUsers works', async () => {
     const store = useUsersStore();
-    (userApi.getUsers as any).mockResolvedValue({ data: ['a'] });
+    (userApi.getUsers as any).mockResolvedValue({ data: { users: ['a'] } });
     await store.asyncGetUsers();
     expect(store.users).toEqual(['a']);
+
+    (userApi.getUsers as any).mockResolvedValue({ data: { items: ['b'] } });
+    await store.asyncGetUsers();
+    expect(store.users).toEqual(['b']);
+
+    (userApi.getUsers as any).mockResolvedValue({ data: ['c'] });
+    await store.asyncGetUsers();
+    expect(store.users).toEqual(['c']);
+
+    (userApi.getUsers as any).mockResolvedValue(['d']);
+    await store.asyncGetUsers();
+    expect(store.users).toEqual(['d']);
   });
   
   it('asyncGetUsers works without data', async () => {
@@ -28,13 +40,31 @@ describe('usersStore', () => {
     (userApi.getUsers as any).mockResolvedValue(null);
     await store.asyncGetUsers();
     expect(store.users).toEqual([]);
+
+    // not an array
+    (userApi.getUsers as any).mockResolvedValue({ data: { users: {} } });
+    await store.asyncGetUsers();
+    expect(store.users).toEqual([]);
   });
 
   it('asyncGetMe works', async () => {
     const store = useUsersStore();
-    (userApi.getMe as any).mockResolvedValue({ data: {id: 1} });
+    (userApi.getMe as any).mockResolvedValue({ data: { user: {id: 1} } });
     await store.asyncGetMe();
     expect(store.me).toEqual({id: 1});
+
+    // branch test
+    (userApi.getMe as any).mockResolvedValue({ data: {id: 2} });
+    await store.asyncGetMe();
+    expect(store.me).toEqual({id: 2});
+
+    (userApi.getMe as any).mockResolvedValue({ id: 3 });
+    await store.asyncGetMe();
+    expect(store.me).toEqual({id: 3});
+
+    (userApi.getMe as any).mockResolvedValue(null);
+    await store.asyncGetMe();
+    expect(store.me).toBeNull();
   });
 
   it('asyncUpdateBio works', async () => {

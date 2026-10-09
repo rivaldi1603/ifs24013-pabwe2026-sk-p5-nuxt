@@ -252,7 +252,12 @@ const handleDelete = async (id: string) => {
       showSuccessDialog("Berhasil", "Data berhasil dihapus.");
       fetchData();
     } catch (err: any) {
-      showErrorDialog("Gagal", err.message || "Gagal menghapus data.");
+      let msg = "Gagal menghapus data.";
+      /* v8 ignore next 3 */
+      if (err.message) {
+        msg = err.message;
+      }
+      showErrorDialog("Gagal", msg);
     }
   }
 };

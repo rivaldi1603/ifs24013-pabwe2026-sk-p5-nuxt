@@ -10,7 +10,13 @@ describe('CashFlowLayout', () => {
     // Trigger toggle menu from Navbar
     const navbar = wrapper.findComponent({ name: 'NavbarComponent' });
     if (navbar.exists()) {
-      await navbar.vm.$emit('toggle-menu');
+      await navbar.vm.$emit('toggle-sidebar');
+      
+      // now click overlay
+      const overlay = wrapper.find('div.bg-black');
+      if (overlay.exists()) {
+        await overlay.trigger('click');
+      }
     }
   });
 });
