@@ -1,4 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
 
 const customPort = Number(process.env.APP_PORT || process.env.PORT) || 3000;
 
@@ -39,12 +40,12 @@ export default defineNuxtConfig({
     inlineStyles: true,
   },
 
-  css: ["~/index.css"],
+  css: ["@fontsource-variable/plus-jakarta-sans", "~/index.css"],
 
   modules: ["@pinia/nuxt"],
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), cssInjectedByJsPlugin()],
     define: {
       DELCOM_BASEURL: JSON.stringify(
         process.env.VITE_DELCOM_BASEURL || "https://open-api.delcom.org/api/v1"
