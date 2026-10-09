@@ -12,6 +12,8 @@
           :src="getAvatar(usersStore.me)" 
           @error="onImgError($event, usersStore.me)"
           alt="Avatar" 
+          width="128" height="128"
+          loading="lazy" decoding="async"
           class="w-32 h-32 rounded-full object-cover mb-4 shadow-sm bg-slate-100"
         />
         <h2 class="text-xl font-medium text-gray-900">{{ usersStore.me.name || usersStore.me.full_name || usersStore.me.username || 'Pengguna' }}</h2>
@@ -153,10 +155,15 @@ const onImgError = (event: Event, user: any) => {
   target.src = getFallbackUrl(user);
 };
 
-onMounted(async () => {
-  await usersStore.asyncGetMe();
-  /* v8 ignore next */
-  if (usersStore.me) {
+onMounted(() => {
+  if (!usersStore.me) {
+    usersStore.asyncGetMe().then(() => {
+      /* v8 ignore next */
+      if (usersStore.me) {
+        name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
+      }
+    });
+  } else {
     name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
   }
 });

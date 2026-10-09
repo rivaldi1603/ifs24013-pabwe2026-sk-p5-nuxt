@@ -4,6 +4,10 @@ import ProfilePage from './ProfilePage.vue';
 import { useUsersStore } from '../states/usersStore';
 import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
+import { mount } from '@vue/test-utils';
+import { createMockPinia } from '../../../test-utils';
+import { createRouter, createMemoryHistory } from 'vue-router';
+import { routes } from '../../../routes';
 
 vi.mock('../../../helpers/toolsHelper', () => ({
   showSuccessDialog: vi.fn(),
@@ -26,6 +30,34 @@ describe('ProfilePage', () => {
     store.isLoading = true;
     store.me = null;
     expect(wrapper.text()).toContain('Profil Saya');
+  });
+
+  it('populates name if user is already loaded before mount', async () => {
+    const pinia = createMockPinia();
+    const router = createRouter({ history: createMemoryHistory(), routes });
+    const store = useUsersStore(pinia);
+    store.me = { name: 'Prefetched User', email: 'test@test.com' };
+    
+    let wrapper = mount(ProfilePage, {
+      global: {
+        plugins: [pinia, router],
+      }
+    });
+    
+    await new Promise(r => setTimeout(r, 10));
+    let nameInput = wrapper.find('input[type="text"]');
+    expect((nameInput.element as HTMLInputElement).value).toBe('Prefetched User');
+
+    // test all fallbacks
+    store.me = { name: '', full_name: '', username: '', email: 'test@test.com' };
+    wrapper = mount(ProfilePage, {
+      global: {
+        plugins: [pinia, router],
+      }
+    });
+    await new Promise(r => setTimeout(r, 10));
+    nameInput = wrapper.find('input[type="text"]');
+    expect((nameInput.element as HTMLInputElement).value).toBe('');
   });
 
   it('handles updates', async () => {

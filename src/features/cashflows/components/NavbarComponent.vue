@@ -21,10 +21,20 @@
           <p class="text-xs text-gray-500">{{ usersStore.me.email }}</p>
         </div>
         <img 
-          :src="usersStore.me.photo || usersStore.me.avatar || usersStore.me.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(usersStore.me.name || usersStore.me.full_name || usersStore.me.username || 'User')}`" 
+          :src="getAvatar(usersStore.me)"
+          @error="onImgError($event, usersStore.me)"
           alt="Avatar" 
-          class="w-10 h-10 rounded-full object-cover"
+          width="40" height="40"
+          loading="lazy" decoding="async"
+          class="w-10 h-10 rounded-full object-cover bg-slate-100"
         />
+      </div>
+      <div v-else class="flex items-center space-x-3 animate-pulse">
+        <div class="text-right hidden sm:block space-y-2">
+          <div class="h-4 bg-gray-200 rounded w-24"></div>
+          <div class="h-3 bg-gray-200 rounded w-32"></div>
+        </div>
+        <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
       </div>
       <button @click="handleLogout" class="text-gray-500 hover:text-red-600 transition-colors" aria-label="Keluar">
         <LogOutIcon class="w-5 h-5" aria-hidden="true" />
@@ -46,9 +56,26 @@ const router = useRouter();
 const authStore = useAuthStore();
 const usersStore = useUsersStore();
 
-onMounted(async () => {
+const getFallbackUrl = (user: any) => {
+  const name = encodeURIComponent(user?.name || user?.full_name || user?.username || 'User');
+  return `https://ui-avatars.com/api/?name=${name}&background=random`;
+};
+
+const getAvatar = (user: any) => {
+  if (!user) return '';
+  let url = user.photo || user.avatar || user.avatar_url;
+  if (!url || !url.startsWith('http')) return getFallbackUrl(user);
+  return url;
+};
+
+const onImgError = (event: Event, user: any) => {
+  const target = event.target as HTMLImageElement;
+  target.src = getFallbackUrl(user);
+};
+
+onMounted(() => {
   if (!usersStore.me) {
-    await usersStore.asyncGetMe();
+    usersStore.asyncGetMe();
   }
 });
 

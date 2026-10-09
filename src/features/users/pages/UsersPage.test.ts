@@ -30,4 +30,30 @@ describe('UsersPage', () => {
       }
     }
   });
+
+  it('handles load more logic', async () => {
+    const { wrapper } = renderWithProviders(UsersPage);
+    const store = useUsersStore();
+    
+    // create 25 users to trigger pagination
+    store.users = Array.from({ length: 25 }, (_, i) => ({
+      id: i + 1,
+      name: `User ${i}`,
+      email: `user${i}@a.com`,
+      created_at: '2026-10-10'
+    }));
+    store.isLoading = false;
+    
+    await wrapper.vm.$nextTick();
+    
+    const rows = wrapper.findAll('tbody tr');
+    expect(rows.length).toBe(20); // PAGE_SIZE
+
+    const btn = wrapper.find('button');
+    expect(btn.exists()).toBe(true);
+    await btn.trigger('click');
+
+    const rowsAfter = wrapper.findAll('tbody tr');
+    expect(rowsAfter.length).toBe(25);
+  });
 });
