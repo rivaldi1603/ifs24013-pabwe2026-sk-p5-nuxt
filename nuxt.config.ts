@@ -13,12 +13,18 @@ export default defineNuxtConfig({
 
   routeRules: {
     "/delcom/**": { proxy: "https://open-api.delcom.org/api/v1/**" },
+    "/_nuxt/**": {
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    },
     "/**": {
       headers: {
         "X-Frame-Options": "DENY",
         "Cross-Origin-Opener-Policy": "same-origin",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Cache-Control": "public, max-age=0, must-revalidate",
       },
     },
   },
@@ -28,6 +34,10 @@ export default defineNuxtConfig({
 
   // Enable vue-router; routes are supplied by src/router.options.ts
   pages: true,
+
+  features: {
+    inlineStyles: true,
+  },
 
   css: ["~/index.css"],
 
