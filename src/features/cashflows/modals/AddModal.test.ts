@@ -39,4 +39,25 @@ describe('AddModal', () => {
     await btns[0].trigger('click');
     expect(wrapper.emitted('close')).toBeTruthy();
   });
+
+  it('handles inputs', async () => {
+    const { wrapper } = renderWithProviders(AddModal, { props: { isOpen: true } });
+    const inputs = wrapper.findAll('input');
+    await inputs[1].setValue('1000');
+    await inputs[1].trigger('input');
+
+    await inputs[0].setValue('label');
+    await inputs[0].trigger('input');
+
+    const textarea = wrapper.find('textarea');
+    await textarea.setValue('desc');
+    await textarea.trigger('input');
+
+    const selects = wrapper.findAll('select');
+    await selects[0].setValue('inflow');
+    await selects[0].trigger('change');
+    
+    await selects[1].setValue('cash');
+    await selects[1].trigger('change');
+  });
 });

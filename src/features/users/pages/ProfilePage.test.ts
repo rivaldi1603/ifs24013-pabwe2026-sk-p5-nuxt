@@ -68,7 +68,7 @@ describe('ProfilePage', () => {
   it('calculates password strength', async () => {
     const { wrapper } = renderWithProviders(ProfilePage);
     const store = useUsersStore();
-    store.me = { name: 'User', email: 'a@a' };
+    store.me = { name: 'User', email: 'a@a', photo: 'http://test.com/a.jpg' };
     await nextTick();
     
     const pwdInput = wrapper.find('input[type="password"]');
@@ -77,5 +77,17 @@ describe('ProfilePage', () => {
     await pwdInput.setValue('abcdefghi');
     await pwdInput.setValue('Abcdefghi');
     await pwdInput.setValue('Abcdefghi1!');
+
+    // check image error
+    const img = wrapper.find('img');
+    if (img.exists()) {
+      await img.trigger('error');
+    }
+    
+    // click file input wrapper button
+    const btn = wrapper.findAll('button').find(b => b.text().includes('Ubah Foto'));
+    if (btn) {
+      await btn.trigger('click');
+    }
   });
 });

@@ -12,10 +12,15 @@ describe('UsersPage', () => {
   it('renders users list', async () => {
     const { wrapper, pinia } = renderWithProviders(UsersPage);
     const store = useUsersStore();
-    store.users = [{ id: 1, name: 'John Doe', email: 'a@a.com', created_at: '2026-10-10' }];
+    store.users = [{ id: 1, name: 'John Doe', email: 'a@a.com', created_at: '2026-10-10', photo: 'http://test.com/a.jpg' }];
     store.isLoading = false;
     
     await wrapper.vm.$nextTick();
     expect(wrapper.text()).toContain('John Doe');
+
+    const img = wrapper.find('img');
+    if (img.exists()) {
+      await img.trigger('error');
+    }
   });
 });

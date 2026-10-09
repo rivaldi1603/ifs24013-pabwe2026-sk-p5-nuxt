@@ -44,4 +44,22 @@ describe('DetailPage', () => {
     expect(router.push).toHaveBeenCalledWith('/');
     global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ data: {} }) });
   });
+
+  it('handles delete error and modal open', async () => {
+    const { wrapper, router } = renderWithProviders(DetailPage);
+    router.push = vi.fn();
+    const store = useCashFlowsStore();
+    store.cashFlow = { id: '1', type: 'inflow', source: 'unknown' };
+    store.asyncDeleteCashFlow = vi.fn().mockRejectedValue(new Error('fail'));
+    
+    await nextTick();
+    
+    const btns = wrapper.findAll('button');
+    const deleteBtn = btns.find(b => b.text() === 'Hapus Transaksi');
+    await deleteBtn?.trigger('click');
+    expect(store.asyncDeleteCashFlow).toHaveBeenCalled();
+
+    const changeBtn = btns.find(b => b.text() === 'Ubah');
+    await changeBtn?.trigger('click');
+  });
 });

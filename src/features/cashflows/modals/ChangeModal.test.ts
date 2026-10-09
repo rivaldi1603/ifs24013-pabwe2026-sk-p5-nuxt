@@ -41,4 +41,27 @@ describe('ChangeModal', () => {
     await btns[0].trigger('click');
     expect(wrapper.emitted('close')).toBeTruthy();
   });
+
+  it('handles inputs', async () => {
+    const { wrapper } = renderWithProviders(ChangeModal, { props: { isOpen: true, cashFlowData: { id: '1', nominal: 1000 } } });
+    await nextTick();
+    
+    const inputs = wrapper.findAll('input');
+    await inputs[1].setValue('2000');
+    await inputs[1].trigger('input');
+
+    await inputs[0].setValue('label2');
+    await inputs[0].trigger('input');
+
+    const textarea = wrapper.find('textarea');
+    await textarea.setValue('desc2');
+    await textarea.trigger('input');
+
+    const selects = wrapper.findAll('select');
+    await selects[0].setValue('outflow');
+    await selects[0].trigger('change');
+    
+    await selects[1].setValue('savings');
+    await selects[1].trigger('change');
+  });
 });

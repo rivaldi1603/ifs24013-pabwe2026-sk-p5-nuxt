@@ -35,4 +35,12 @@ describe('toolsHelper', () => {
     const formatted = formatDate(d.toISOString());
     expect(typeof formatted).toBe('string');
   });
+
+  it('formatDate handles empty', () => {
+    expect(formatDate('')).toBe('-');
+  });
+
+  it('formatDate handles invalid', () => {
+    expect(formatDate('invalid')).toBe('-');
+  });
 });
