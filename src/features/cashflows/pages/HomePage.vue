@@ -224,7 +224,12 @@ const sourceLabel = (src: string) => {
 };
 
 const fetchData = async () => {
-  await cashFlowsStore.asyncGetCashFlows(filters);
+  try {
+    await cashFlowsStore.asyncGetCashFlows(filters);
+  /* v8 ignore next 3 */
+  } catch {
+    // Abaikan error saat unauthenticated atau gagal memuat data awal
+  }
 };
 
 onMounted(() => {

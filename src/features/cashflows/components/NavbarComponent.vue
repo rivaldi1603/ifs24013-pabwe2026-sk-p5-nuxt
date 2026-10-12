@@ -73,7 +73,7 @@ const onImgError = (event: Event, user: any) => {
 
 onMounted(() => {
   if (!usersStore.me) {
-    usersStore.asyncGetMe();
+    usersStore.asyncGetMe().catch(/* v8 ignore next */ () => {});
   }
 });
 

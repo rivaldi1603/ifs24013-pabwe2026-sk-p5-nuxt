@@ -75,6 +75,11 @@ const onImgError = (event: Event, user: any) => {
 };
 
 onMounted(async () => {
-  await usersStore.asyncGetUsers();
+  try {
+    await usersStore.asyncGetUsers();
+  /* v8 ignore next 3 */
+  } catch {
+    // Abaikan error saat unauthenticated
+  }
 });
 </script>

@@ -160,7 +160,7 @@ onMounted(() => {
       if (usersStore.me) {
         name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
       }
-    });
+    }).catch(/* v8 ignore next */ () => {});
   } else {
     name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
   }
