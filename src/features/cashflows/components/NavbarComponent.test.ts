@@ -38,10 +38,17 @@ describe('NavbarComponent', () => {
     }
   });
 
-  it('does not fetch me if already loaded', () => {
-    // we can't easily inject state before mount with renderWithProviders directly 
-    // unless we create Pinia first, but we can just use the previous test since the component is rendered.
-    // Actually, Vue Test Utils lets us just set the store.
+  it('does not fetch me if already loaded', async () => {
+    const { mount } = await import('@vue/test-utils');
+    const { createMockPinia, testRoutes } = await import('../../../test-utils');
+    const { createRouter, createMemoryHistory } = await import('vue-router');
+    const pinia = createMockPinia();
+    const usersStore = useUsersStore(pinia);
+    usersStore.me = { name: 'Loaded' };
+    usersStore.asyncGetMe = vi.fn();
+    const router = createRouter({ history: createMemoryHistory(), routes: testRoutes });
+    mount(NavbarComponent, { global: { plugins: [pinia, router] } });
+    expect(usersStore.asyncGetMe).not.toHaveBeenCalled();
   });
 
   it('handles valid image url without error', async () => {

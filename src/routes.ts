@@ -1,37 +1,28 @@
-import AuthLayout from './features/auth/layouts/AuthLayout.vue';
-import LoginPage from './features/auth/pages/LoginPage.vue';
-import RegisterPage from './features/auth/pages/RegisterPage.vue';
-
-import CashFlowLayout from './features/cashflows/layouts/CashFlowLayout.vue';
-import HomePage from './features/cashflows/pages/HomePage.vue';
-import DetailPage from './features/cashflows/pages/DetailPage.vue';
-import UsersPage from './features/users/pages/UsersPage.vue';
-import ProfilePage from './features/users/pages/ProfilePage.vue';
-
-import NotFoundPage from './features/common/pages/NotFoundPage.vue';
 import type { RouteRecordRaw } from 'vue-router';
 
+// Route-level code splitting: each page is downloaded only when visited,
+// so the initial bundle (e.g. for /auth/login) stays small.
 export const routes: RouteRecordRaw[] = [
   {
     path: '/auth',
-    component: AuthLayout,
+    component: () => import('./features/auth/layouts/AuthLayout.vue'),
     children: [
-      { path: 'login', component: LoginPage },
-      { path: 'register', component: RegisterPage },
+      { path: 'login', component: () => import('./features/auth/pages/LoginPage.vue') },
+      { path: 'register', component: () => import('./features/auth/pages/RegisterPage.vue') },
     ],
   },
   {
     path: '/',
-    component: CashFlowLayout,
+    component: () => import('./features/cashflows/layouts/CashFlowLayout.vue'),
     children: [
-      { path: '', component: HomePage },
-      { path: 'cash-flows/:cashFlowId', component: DetailPage },
-      { path: 'users', component: UsersPage },
-      { path: 'profile', component: ProfilePage },
+      { path: '', component: () => import('./features/cashflows/pages/HomePage.vue') },
+      { path: 'cash-flows/:cashFlowId', component: () => import('./features/cashflows/pages/DetailPage.vue') },
+      { path: 'users', component: () => import('./features/users/pages/UsersPage.vue') },
+      { path: 'profile', component: () => import('./features/users/pages/ProfilePage.vue') },
     ],
   },
   {
     path: '/:pathMatch(.*)*',
-    component: NotFoundPage,
+    component: () => import('./features/common/pages/NotFoundPage.vue'),
   },
 ];

@@ -5,9 +5,8 @@ import { useUsersStore } from '../states/usersStore';
 import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
 import { mount } from '@vue/test-utils';
-import { createMockPinia } from '../../../test-utils';
+import { createMockPinia, testRoutes as routes } from '../../../test-utils';
 import { createRouter, createMemoryHistory } from 'vue-router';
-import { routes } from '../../../routes';
 
 vi.mock('../../../helpers/toolsHelper', () => ({
   showSuccessDialog: vi.fn(),
