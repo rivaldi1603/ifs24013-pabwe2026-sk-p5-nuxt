@@ -61,6 +61,7 @@ export default defineNuxtConfig({
 
   nitro: {
     devPort: customPort,
+    compressPublicAssets: true,
     externals: {
       inline: ["@vue/shared"],
     },
