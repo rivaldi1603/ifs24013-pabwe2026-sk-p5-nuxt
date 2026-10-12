@@ -1,0 +1,705 @@
+import fs from 'fs';
+import path from 'path';
+import http from 'http';
+import https from 'https';
+import { fileURLToPath } from 'url';
+import * as chromeLauncher from 'chrome-launcher';
+import lighthouse from 'lighthouse';
+import puppeteer from 'puppeteer-core';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+function getNormalizedPathname(urlStr) {
+  try {
+    const parsed = new URL(urlStr);
+    let p = parsed.pathname;
+    if (p.length > 1 && p.endsWith('/')) {
+      p = p.slice(0, -1);
+    }
+    return p.toLowerCase();
+  } catch (e) {
+    return '';
+  }
+}
+
+async function runLighthouse(url, options) {
+  const runnerResult = await lighthouse(url, options);
+  const lhr = runnerResult.lhr;
+  return {
+    performance: Math.round((lhr.categories.performance?.score || 0) * 100),
+    accessibility: Math.round((lhr.categories.accessibility?.score || 0) * 100),
+    bestPractices: Math.round((lhr.categories['best-practices']?.score || 0) * 100),
+    seo: Math.round((lhr.categories.seo?.score || 0) * 100),
+    audits: lhr.audits,
+  };
+}
+
+async function checkRedirectAndRunAxe(chromePort, url) {
+  const browser = await puppeteer.connect({
+    browserURL: `http://localhost:${chromePort}`
+  });
+  try {
+    const page = await browser.newPage();
+    console.log(`  Checking reachability & redirect for ${url} with Puppeteer...`);
+    const response = await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+
+    const status = response ? response.status() : 0;
+    if (status !== 200) {
+      await page.close();
+      return {
+        success: false,
+        reason: `Status ${status || "?"} — harus 200 OK`,
+      };
+    }
+
+    const redirectChain = response.request().redirectChain();
+    if (redirectChain && redirectChain.length > 0) {
+      const hops = redirectChain
+        .map((req) => {
+          try {
+            return new URL(req.url()).pathname;
+          } catch {
+            return req.url();
+          }
+        })
+        .join(' → ');
+      await page.close();
+      return {
+        success: false,
+        reason: `Redirect: ${hops} → ${getNormalizedPathname(page.url())}`,
+      };
+    }
+
+    const finalUrl = page.url();
+    const expectedPathname = getNormalizedPathname(url);
+    const actualPathname = getNormalizedPathname(finalUrl);
+
+    if (expectedPathname !== actualPathname) {
+      await page.close();
+      return {
+        success: false,
+        reason: `Redirect ke "${actualPathname}" (seharusnya "${expectedPathname}")`,
+      };
+    }
+
+    const axePath = path.join(__dirname, 'node_modules', 'axe-core', 'axe.min.js');
+    if (!fs.existsSync(axePath)) {
+      throw new Error('axe-core not found in node_modules');
+    }
+    const axeSource = fs.readFileSync(axePath, 'utf8');
+    await page.evaluate(axeSource);
+    const violations = await page.evaluate(async () => {
+      return await axe.run();
+    });
+    await page.close();
+    return {
+      success: true,
+      violations: violations.violations || [],
+    };
+  } finally {
+    await browser.disconnect();
+  }
+}
+
+function pathLabelFromUrl(urlStr) {
+  try {
+    return new URL(urlStr).pathname || urlStr;
+  } catch {
+    return urlStr;
+  }
+}
+
+/**
+ * Login flow:
+ * 1) Pastikan path login bisa diakses (200 OK, tanpa redirect)
+ * 2) Baru isi form — kalau form/selector gagal = "Login gagal" (path sudah OK)
+ */
+async function runLoginFlow(chromePort, loginUrl, usernameEl, passwordEl, submitEl, username, password) {
+  const pathLabel = pathLabelFromUrl(loginUrl);
+
+  // --- Tahap 1: path login harus bisa diakses ---
+  console.log(`[Auth] Cek akses path login: ${loginUrl}`);
+  const reachable = await checkUrlReachable(loginUrl);
+  if (!reachable.ok) {
+    const msg =
+      `Gagal mengakses halaman ${pathLabel}. ` +
+      `Cek kembali apakah halaman login tersedia di aplikasi kamu` +
+      (reachable.reason ? ` (${shortHttpReason(reachable.reason)})` : "") +
+      ".";
+    console.error(`DELCOM_ERROR: ${msg}`);
+    const err = new Error(msg);
+    err.code = "PATH_UNREACHABLE";
+    throw err;
+  }
+
+  const browser = await puppeteer.connect({
+    browserURL: `http://localhost:${chromePort}`,
+  });
+  try {
+    const page = await browser.newPage();
+    let response;
+    try {
+      response = await page.goto(loginUrl, {
+        waitUntil: "networkidle2",
+        timeout: 30000,
+      });
+    } catch {
+      const msg =
+        `Gagal mengakses halaman ${pathLabel}. ` +
+        `Cek kembali apakah halaman login tersedia di aplikasi kamu.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "PATH_UNREACHABLE";
+      throw err;
+    }
+
+    const status = response ? response.status() : 0;
+    if (status !== 200) {
+      const msg =
+        `Gagal mengakses halaman ${pathLabel}. ` +
+        `Cek kembali apakah halaman login tersedia di aplikasi kamu (status ${status}).`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "PATH_UNREACHABLE";
+      throw err;
+    }
+
+    const redirectChain = response.request().redirectChain();
+    if (redirectChain && redirectChain.length > 0) {
+      const msg =
+        `Gagal mengakses halaman ${pathLabel}. ` +
+        `Halaman login melakukan redirect — harus langsung 200 OK tanpa redirect.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "PATH_UNREACHABLE";
+      throw err;
+    }
+
+    const finalPath = pathLabelFromUrl(page.url());
+    if (getNormalizedPathname(loginUrl) !== getNormalizedPathname(page.url())) {
+      const msg =
+        `Gagal mengakses halaman ${pathLabel}. ` +
+        `Dialihkan ke ${finalPath} — path login harus terbuka tanpa redirect.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "PATH_UNREACHABLE";
+      throw err;
+    }
+
+    console.log(`[Auth] Path login OK (${pathLabel}). Mengecek selector form...`);
+
+    // --- Tahap 2: path OK → cek selector satu per satu ---
+    const selectors = [
+      { key: "username", label: "username", selector: usernameEl },
+      { key: "password", label: "password", selector: passwordEl },
+      { key: "submit", label: "tombol submit", selector: submitEl },
+    ];
+
+    const notConfigured = selectors.filter((s) => !String(s.selector || "").trim());
+    if (notConfigured.length > 0) {
+      const names = notConfigured.map((s) => s.label).join(", ");
+      const msg =
+        `Login gagal di path ${pathLabel}. ` +
+        `Selector ${names} belum dikonfigurasi pada konten. ` +
+        `Lengkapi selector username, password, dan tombol submit di pengaturan tugas.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "LOGIN_SELECTOR_CONFIG";
+      throw err;
+    }
+
+    const missingOnPage = [];
+    for (const item of selectors) {
+      try {
+        await page.waitForSelector(item.selector, { timeout: 8000 });
+      } catch {
+        missingOnPage.push(`${item.label} (${item.selector})`);
+      }
+    }
+
+    if (missingOnPage.length > 0) {
+      const msg =
+        `Login gagal di path ${pathLabel}. ` +
+        `Path bisa dibuka, tetapi selector berikut tidak ditemukan di halaman: ${missingOnPage.join("; ")}. ` +
+        `Pastikan elemen username, password, dan tombol submit ada di halaman login.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "LOGIN_SELECTOR_MISSING";
+      throw err;
+    }
+
+    // Semua selector ada → isi form & submit
+    try {
+      await page.type(usernameEl, username);
+      await page.type(passwordEl, password);
+      await Promise.all([
+        page.click(submitEl),
+        page
+          .waitForNavigation({ waitUntil: "networkidle2", timeout: 20000 })
+          .catch(() => {}),
+      ]);
+    } catch (submitErr) {
+      const msg =
+        `Login gagal di path ${pathLabel}. ` +
+        `Selector ditemukan, tetapi proses login gagal. ` +
+        `Cek username/password uji coba dan tombol submit.`;
+      console.error(`DELCOM_ERROR: ${msg}`);
+      const err = new Error(msg);
+      err.code = "LOGIN_SUBMIT";
+      throw err;
+    }
+
+    console.log(`[Auth] Login selesai. URL sekarang: ${page.url()}`);
+    await page.close();
+  } finally {
+    await browser.disconnect();
+  }
+}
+
+function calcAxeScore(violations, axePenalties) {
+  let deduction = 0;
+  for (const v of violations) {
+    let penalty = axePenalties.moderate ?? 1.0;
+    if (v.impact === 'critical') penalty = axePenalties.critical ?? 5.0;
+    else if (v.impact === 'serious') penalty = axePenalties.serious ?? 2.5;
+    else if (v.impact === 'minor') penalty = axePenalties.minor ?? 0.5;
+    deduction += penalty * v.nodes.length;
+  }
+  return Math.round(Math.max(0, 100 - deduction));
+}
+
+function avg(arr) {
+  if (!arr.length) return 0;
+  return Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+}
+
+function buildFullUrl(baseUrl, relPath) {
+  try {
+    const base = baseUrl.replace(/\/$/, '');
+    if (!relPath || relPath === '/') return base + '/';
+    const rel = relPath.startsWith('/') ? relPath : '/' + relPath;
+    return base + rel;
+  } catch (e) {
+    return baseUrl;
+  }
+}
+
+// Check if a URL returns HTTP 200 OK (redirect / non-200 = gagal)
+function checkUrlReachable(urlStr, timeoutMs = 10000) {
+  return new Promise((resolve) => {
+    try {
+      const parsedUrl = new URL(urlStr);
+      const lib = parsedUrl.protocol === 'https:' ? https : http;
+      const req = lib.get(
+        urlStr,
+        {
+          timeout: timeoutMs,
+          // Jangan ikuti redirect — 3xx harus dianggap gagal
+          headers: { Accept: '*/*' },
+        },
+        (res) => {
+          const { statusCode } = res;
+          res.resume(); // consume response body
+          if (statusCode === 200) {
+            resolve({ ok: true, status: statusCode });
+          } else if (statusCode >= 300 && statusCode < 400) {
+            resolve({
+              ok: false,
+              status: statusCode,
+              reason: `Redirect ${statusCode}`,
+            });
+          } else {
+            resolve({
+              ok: false,
+              status: statusCode,
+              reason: `Status ${statusCode}`,
+            });
+          }
+        },
+      );
+      req.on('timeout', () => {
+        req.destroy();
+        resolve({ ok: false, status: 0, reason: "Timeout" });
+      });
+      req.on("error", (err) => {
+        resolve({
+          ok: false,
+          status: 0,
+          reason: err.message || "Gagal terhubung",
+        });
+      });
+    } catch (e) {
+      resolve({ ok: false, status: 0, reason: e.message });
+    }
+  });
+}
+
+function stopOnPathFailure(kind, fullUrl, reason) {
+  let pathLabel = fullUrl;
+  try {
+    pathLabel = new URL(fullUrl).pathname || fullUrl;
+  } catch {
+    // keep fullUrl
+  }
+  const cause = shortHttpReason(reason);
+  // Pesan singkat untuk UI (baris DELCOM_ERROR diambil oleh Electron)
+  const shortMsg =
+    `Gagal mengakses halaman ${pathLabel}. ` +
+    `Cek kembali apakah halaman ini tersedia di aplikasi kamu` +
+    (cause ? ` (${cause})` : "") +
+    ".";
+  console.error(`DELCOM_ERROR: ${shortMsg}`);
+  console.error(`DELCOM_ERROR_URL: ${fullUrl}`);
+  console.error(`DELCOM_ERROR_CAUSE: ${kind} — ${cause}`);
+  throw new Error(shortMsg);
+}
+
+function shortHttpReason(reason) {
+  const r = String(reason || "");
+  if (/timed out|Timeout/i.test(r)) return "timeout";
+  if (/Redirect HTTP (\d+)/i.test(r) || /Redirect (\d+)/i.test(r)) {
+    return `redirect ${RegExp.$1}`;
+  }
+  if (/HTTP status (\d+)/i.test(r) || /Status (\d+)/i.test(r) || /HTTP (\d+)/i.test(r)) {
+    const code = RegExp.$1;
+    if (code === "404") return "404 tidak ditemukan";
+    if (code === "403") return "403 akses ditolak";
+    if (code === "500") return "500 error server";
+    return `status ${code}`;
+  }
+  if (/Redirect ke "([^"]+)"/i.test(r)) {
+    return `redirect ke ${RegExp.$1}`;
+  }
+  if (/Redirect:/i.test(r)) return "redirect";
+  if (!r.trim()) return "";
+  // jangan kirim log panjang
+  return r.length > 80 ? `${r.slice(0, 77)}...` : r;
+}
+
+async function run() {
+  let chrome;
+  try {
+    const configPath = path.join(__dirname, 'config.json');
+    if (!fs.existsSync(configPath)) {
+      throw new Error('config.json not found');
+    }
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    const {
+      url,
+      includeMobile,
+      paths = [],
+      pathsAuth = [],
+      minimumPath = 0,
+      minimumPathAuth = 0,
+      pathAuthLogin,
+      pathAuthElementUsername,
+      pathAuthElementPassword,
+      pathAuthElementSubmit,
+      authUsername,
+      authPassword,
+      axePenalties = {}
+    } = config;
+
+    // Ensure base URL has no trailing slash (except root)
+    const baseUrl = url.replace(/\/$/, '');
+
+    // All public paths to audit
+    const publicPaths = paths.length > 0 ? paths : ['/'];
+    const authPaths = pathsAuth;
+
+    // ==========================================
+    // VALIDASI JUMLAH PATH MINIMUM
+    // ==========================================
+    if (minimumPath > 0 && publicPaths.length < minimumPath) {
+      throw new Error(
+        `VALIDASI GAGAL: Jumlah path publik tidak memenuhi syarat minimum.\n` +
+        `  Diperlukan  : ${minimumPath} path\n` +
+        `  Diberikan   : ${publicPaths.length} path\n` +
+        `  Tambahkan setidaknya ${minimumPath - publicPaths.length} path lagi.`
+      );
+    }
+
+    if (minimumPathAuth > 0 && authPaths.length < minimumPathAuth) {
+      throw new Error(
+        `VALIDASI GAGAL: Jumlah path terautentikasi tidak memenuhi syarat minimum.\n` +
+        `  Diperlukan  : ${minimumPathAuth} path auth\n` +
+        `  Diberikan   : ${authPaths.length} path auth\n` +
+        `  Tambahkan setidaknya ${minimumPathAuth - authPaths.length} path auth lagi.`
+      );
+    }
+
+    console.log(`Starting audit for base URL: ${baseUrl}`);
+    console.log(`Public paths to audit (${publicPaths.length}/${minimumPath || '∞'}): ${publicPaths.join(', ')}`);
+    if (authPaths.length) {
+      console.log(`Auth paths to audit (${authPaths.length}/${minimumPathAuth || '∞'}): ${authPaths.join(', ')}`);
+    }
+
+    // Launch Chrome
+    chrome = await chromeLauncher.launch({
+      chromeFlags: ['--headless', '--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+    });
+    console.log(`Chrome launched on port: ${chrome.port}`);
+
+    const lighthouseOptions = {
+      logLevel: 'info',
+      output: 'json',
+      port: chrome.port,
+      onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
+    };
+
+    if (!includeMobile) {
+      lighthouseOptions.formFactor = 'desktop';
+      lighthouseOptions.screenEmulation = {
+        mobile: false,
+        width: 1350,
+        height: 940,
+        deviceScaleFactor: 1,
+        disabled: false,
+      };
+      lighthouseOptions.emulatedUserAgent =
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    }
+
+    // ==========================================
+    // PHASE 1: Audit all PUBLIC paths
+    // ==========================================
+    const perfScores = [];
+    const accScores = [];
+    const bestScores = [];
+    const seoScores = [];
+    let lastLighthouseAudits = {};
+    let allPublicViolations = [];
+
+    for (const relPath of publicPaths) {
+      const fullUrl = buildFullUrl(baseUrl, relPath);
+      console.log(`\n[Public] Checking: ${fullUrl}`);
+
+      // Pre-flight reachability check — wajib 200 OK
+      const reachable = await checkUrlReachable(fullUrl);
+      if (!reachable.ok) {
+        console.error(`  ✗ Path tidak dapat diakses: ${fullUrl} — ${reachable.reason}`);
+        stopOnPathFailure(
+          "Path publik tidak bisa dibuka",
+          fullUrl,
+          shortHttpReason(reachable.reason),
+        );
+      }
+
+      // Check redirects — jika redirect, hentikan seluruh pengujian
+      const redirectCheck = await checkRedirectAndRunAxe(chrome.port, fullUrl);
+      if (!redirectCheck.success) {
+        console.error(`  ✗ ${redirectCheck.reason}`);
+        stopOnPathFailure(
+          "Path publik redirect / tidak valid",
+          fullUrl,
+          shortHttpReason(redirectCheck.reason),
+        );
+      }
+
+      console.log(`  ✓ Path dapat diakses (200 OK) dan tidak redirect. Menjalankan audit...`);
+
+      try {
+        // Lighthouse (Puppeteer disconnected)
+        console.log(`  Running Lighthouse on ${fullUrl}...`);
+        const lhResult = await runLighthouse(fullUrl, { ...lighthouseOptions });
+        perfScores.push(lhResult.performance);
+        accScores.push(lhResult.accessibility);
+        bestScores.push(lhResult.bestPractices);
+        seoScores.push(lhResult.seo);
+        lastLighthouseAudits = lhResult.audits;
+        console.log(`  Lighthouse: perf=${lhResult.performance} acc=${lhResult.accessibility} best=${lhResult.bestPractices} seo=${lhResult.seo}`);
+
+        // Axe violations from redirect check
+        allPublicViolations = allPublicViolations.concat(redirectCheck.violations);
+        console.log(`  Axe violations on this page: ${redirectCheck.violations.length}`);
+      } catch (err) {
+        console.error(`  Error auditing ${fullUrl}: ${err.message}`);
+        stopOnPathFailure(
+          "Gagal audit path publik",
+          fullUrl,
+          shortHttpReason(err.message),
+        );
+      }
+    }
+
+    // ==========================================
+    // PHASE 2: Audit all AUTH paths (login first)
+    // ==========================================
+    let allAuthViolations = [];
+    const authPerfScores = [];
+    const authAccScores = [];
+    const authBestScores = [];
+    const authSeoScores = [];
+
+    if (authPaths.length > 0 && pathAuthLogin && authUsername && authPassword) {
+      console.log(`\n[Auth] Logging in at: ${buildFullUrl(baseUrl, pathAuthLogin)}`);
+      try {
+        const loginUrl = buildFullUrl(baseUrl, pathAuthLogin);
+        await runLoginFlow(
+          chrome.port,
+          loginUrl,
+          pathAuthElementUsername,
+          pathAuthElementPassword,
+          pathAuthElementSubmit,
+          authUsername,
+          authPassword
+        );
+
+        for (const relPath of authPaths) {
+          const fullUrl = buildFullUrl(baseUrl, relPath);
+          console.log(`\n[Auth] Checking protected page: ${fullUrl}`);
+
+          // Cek lewat Puppeteer (session login Chrome) — wajib 200 OK tanpa redirect
+          const redirectCheck = await checkRedirectAndRunAxe(chrome.port, fullUrl);
+          if (!redirectCheck.success) {
+            console.error(`  ✗ ${redirectCheck.reason}`);
+            stopOnPathFailure(
+              "Path terproteksi tidak bisa dibuka / redirect",
+              fullUrl,
+              shortHttpReason(redirectCheck.reason),
+            );
+          }
+
+          console.log(`  ✓ Auth path dapat diakses (200 OK) dan tidak redirect. Menjalankan audit...`);
+
+          try {
+            // Lighthouse on auth pages (Puppeteer disconnected)
+            console.log(`  Running Lighthouse on ${fullUrl}...`);
+            const lhResult = await runLighthouse(fullUrl, { ...lighthouseOptions });
+            authPerfScores.push(lhResult.performance);
+            authAccScores.push(lhResult.accessibility);
+            authBestScores.push(lhResult.bestPractices);
+            authSeoScores.push(lhResult.seo);
+            if (!Object.keys(lastLighthouseAudits).length) {
+              lastLighthouseAudits = lhResult.audits;
+            }
+            console.log(`  Lighthouse: perf=${lhResult.performance} acc=${lhResult.accessibility} best=${lhResult.bestPractices} seo=${lhResult.seo}`);
+
+            // Axe violations from redirect check
+            allAuthViolations = allAuthViolations.concat(redirectCheck.violations);
+            console.log(`  Axe violations on this page: ${redirectCheck.violations.length}`);
+          } catch (err) {
+            console.error(`  Error auditing auth page ${fullUrl}: ${err.message}`);
+            stopOnPathFailure(
+              "Gagal audit path terproteksi",
+              fullUrl,
+              shortHttpReason(err.message),
+            );
+          }
+        }
+      } catch (authErr) {
+        console.error(`[Auth] Authentication flow failed: ${authErr.message}`);
+        // Jangan bungkus ulang — pesan sudah jelas (path gagal vs login gagal)
+        const msg = String(authErr.message || "Gagal proses login.");
+        if (!msg.includes("DELCOM_ERROR:")) {
+          console.error(`DELCOM_ERROR: ${msg}`);
+        }
+        throw authErr;
+      }
+    }
+
+    // ==========================================
+    // Combine scores across all paths
+    // ==========================================
+    const allPerfScores = [...perfScores, ...authPerfScores];
+    const allAccScores = [...accScores, ...authAccScores];
+    const allBestScores = [...bestScores, ...authBestScores];
+    const allSeoScores = [...seoScores, ...authSeoScores];
+    const allViolations = [...allPublicViolations, ...allAuthViolations];
+
+    // Deduplicate violations by id
+    const violationMap = new Map();
+    for (const v of allViolations) {
+      if (!violationMap.has(v.id)) {
+        violationMap.set(v.id, v);
+      } else {
+        // Merge nodes
+        const existing = violationMap.get(v.id);
+        existing.nodes = [...existing.nodes, ...v.nodes];
+      }
+    }
+    const mergedViolations = Array.from(violationMap.values());
+
+    const lighthouse_performance_score = avg(allPerfScores);
+    const lighthouse_accessibility_score = avg(allAccScores);
+    const lighthouse_best_practices_score = avg(allBestScores);
+    const lighthouse_seo_score = avg(allSeoScores);
+    const axe_score = calcAxeScore(mergedViolations, axePenalties);
+
+    console.log(`\n=== FINAL SCORES ===`);
+    console.log(`Performance: ${lighthouse_performance_score}`);
+    console.log(`Accessibility: ${lighthouse_accessibility_score}`);
+    console.log(`Best Practices: ${lighthouse_best_practices_score}`);
+    console.log(`SEO: ${lighthouse_seo_score}`);
+    console.log(`Axe Score: ${axe_score}`);
+
+    // Clean and format Lighthouse audits for the report
+    const cleanedAudits = {};
+    if (lastLighthouseAudits) {
+      for (const key of Object.keys(lastLighthouseAudits)) {
+        const original = lastLighthouseAudits[key] || {};
+        cleanedAudits[key] = {
+          title: original.title || '',
+          description: original.description || '',
+          score: original.score !== undefined ? original.score : null,
+          displayValue: original.displayValue || '',
+          explanation: original.explanation || undefined,
+          errorMessage: original.errorMessage || undefined,
+          details: original.details || undefined,
+        };
+      }
+    }
+
+    // Clean and format Axe Core violations for the report
+    const cleanedViolations = mergedViolations.map((v) => {
+      const nodes = (v.nodes || []).map((node) => ({
+        html: node.html || '',
+        failureSummary: node.failureSummary || '',
+      }));
+      return {
+        id: v.id || '',
+        impact: v.impact || '',
+        description: v.description || '',
+        help: v.help || '',
+        helpUrl: v.helpUrl || '',
+        nodes: nodes,
+      };
+    });
+
+    const report = {
+      url: baseUrl,
+      lighthouse_performance_score,
+      lighthouse_accessibility_score,
+      lighthouse_best_practices_score,
+      lighthouse_seo_score,
+      axe_score,
+      path: publicPaths.join('\n'),
+      path_auth: authPaths.join('\n'),
+      lighthouse_report: { audits: cleanedAudits },
+      axe_report: { violations: cleanedViolations },
+    };
+
+    const reportPath = path.join(__dirname, 'reports.json');
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2), 'utf8');
+    console.log('Audit complete! Report written to reports.json');
+
+    if (chrome) await chrome.kill();
+    process.exit(0);
+  } catch (err) {
+    const raw = err?.message || String(err);
+    if (!String(raw).includes("Gagal mengakses halaman") && !String(raw).startsWith("Login gagal")) {
+      console.error(`DELCOM_ERROR: ${raw}`);
+    } else if (!String(raw).startsWith("DELCOM_ERROR:")) {
+      // stopOnPathFailure sudah print DELCOM_ERROR; pastikan tetap ada
+      console.error(`DELCOM_ERROR: ${raw}`);
+    }
+    console.error("Audit failed:", raw);
+    if (chrome) {
+      try { await chrome.kill(); } catch (e) {}
+    }
+    process.exit(1);
+  }
+}
+
+run();

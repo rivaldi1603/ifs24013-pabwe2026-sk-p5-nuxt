@@ -47,7 +47,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
     define: {
       DELCOM_BASEURL: JSON.stringify(
-        process.env.VITE_DELCOM_BASEURL || "https://open-api.delcom.org/api/v1"
+        process.env.VITE_DELCOM_BASEURL || "/delcom"
       ),
     },
     build: {
