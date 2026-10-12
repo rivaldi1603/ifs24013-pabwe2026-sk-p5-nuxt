@@ -22,7 +22,7 @@
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="h-10 w-10 flex-shrink-0">
-                  <img class="h-10 w-10 rounded-full object-cover bg-slate-100" loading="lazy" decoding="async" :src="getAvatar(user)" @error="onImgError($event, user)" alt="" />
+                  <img class="h-10 w-10 rounded-full object-cover bg-slate-100" width="40" height="40" loading="lazy" decoding="async" :src="getAvatar(user)" @error="onImgError($event, user)" alt="" />
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">{{ user.name || user.full_name || user.username || 'Pengguna' }}</div>
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { getFallbackAvatar } from '../../../helpers/avatarHelper';
 import { onMounted, ref, computed } from 'vue';
 import { useUsersStore } from '../states/usersStore';
 import { formatDate } from '../../../helpers/toolsHelper';
@@ -60,10 +61,7 @@ const showMore = () => {
   visibleCount.value += PAGE_SIZE;
 };
 
-const getFallbackUrl = (user: any) => {
-  const name = encodeURIComponent(user.name || user.full_name || user.username || 'User');
-  return `https://ui-avatars.com/api/?name=${name}&background=random`;
-};
+const getFallbackUrl = (user: any) => getFallbackAvatar(user);
 
 const getAvatar = (user: any) => {
   let url = user.photo || user.avatar || user.avatar_url;

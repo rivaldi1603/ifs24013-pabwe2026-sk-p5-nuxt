@@ -15,6 +15,11 @@ describe('ChangeModal', () => {
     await wrapper.setProps({ isOpen: true, cashFlowData: { id: '1', type: 'inflow', nominal: 0 } });
     await nextTick();
     expect(wrapper.text()).toContain('Ubah Pencatatan Arus Kas');
+
+    // test when isOpen is false and when cashFlowData is falsy
+    await wrapper.setProps({ isOpen: false });
+    await wrapper.setProps({ isOpen: true, cashFlowData: null });
+    await wrapper.setProps({ isOpen: false });
   });
 
   it('handles submit success', async () => {

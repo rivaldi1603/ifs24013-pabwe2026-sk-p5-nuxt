@@ -84,6 +84,7 @@
 </template>
 
 <script setup lang="ts">
+import { getFallbackAvatar } from '../../../helpers/avatarHelper';
 import { onMounted, ref, watch, computed } from 'vue';
 import { useUsersStore } from '../states/usersStore';
 import { showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
@@ -136,10 +137,7 @@ const passwordStrengthBg = computed(() => {
   return 'bg-emerald-500';
 });
 
-const getFallbackUrl = (user: any) => {
-  const name = encodeURIComponent(user.name || user.full_name || user.username || 'User');
-  return `https://ui-avatars.com/api/?name=${name}&background=random`;
-};
+const getFallbackUrl = (user: any) => getFallbackAvatar(user);
 
 const getAvatar = (user: any) => {
   if (!user) return '';
