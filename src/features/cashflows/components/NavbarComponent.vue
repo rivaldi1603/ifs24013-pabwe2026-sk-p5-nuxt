@@ -26,7 +26,7 @@
           alt="Avatar" 
           width="40" height="40"
           loading="lazy" decoding="async"
-          class="w-10 h-10 rounded-full object-cover bg-slate-100"
+          class="w-10 h-10 min-w-[40px] aspect-square rounded-full object-cover bg-slate-100"
         />
       </div>
       <div v-else class="flex items-center space-x-3 animate-pulse">
@@ -34,7 +34,7 @@
           <div class="h-4 bg-gray-200 rounded w-24"></div>
           <div class="h-3 bg-gray-200 rounded w-32"></div>
         </div>
-        <div class="w-10 h-10 bg-gray-200 rounded-full"></div>
+        <div class="w-10 h-10 min-w-[40px] aspect-square bg-gray-200 rounded-full"></div>
       </div>
       <button @click="handleLogout" class="text-gray-500 hover:text-red-600 transition-colors" aria-label="Keluar">
         <LogOutIcon class="w-5 h-5" aria-hidden="true" />

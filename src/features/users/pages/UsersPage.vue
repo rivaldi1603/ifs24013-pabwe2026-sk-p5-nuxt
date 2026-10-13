@@ -9,20 +9,20 @@
     </div>
     
     <div v-else class="bg-white shadow rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
+      <table class="min-w-full table-fixed divide-y divide-gray-200">
         <thead class="bg-gray-50">
           <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terdaftar Pada</th>
+            <th class="w-1/2 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+            <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+            <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terdaftar Pada</th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="user in visibleUsers" :key="user.id">
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
-                <div class="h-10 w-10 flex-shrink-0">
-                  <img class="h-10 w-10 rounded-full object-cover bg-slate-100" width="40" height="40" loading="lazy" decoding="async" :src="getAvatar(user)" @error="onImgError($event, user)" alt="" />
+                <div class="h-10 w-10 min-w-[40px] aspect-square flex-shrink-0">
+                  <img class="h-10 w-10 min-w-[40px] aspect-square rounded-full object-cover bg-slate-100" width="40" height="40" loading="lazy" decoding="async" :src="getAvatar(user)" @error="onImgError($event, user)" alt="" />
                 </div>
                 <div class="ml-4">
                   <div class="text-sm font-medium text-gray-900">{{ user.name || user.full_name || user.username || 'Pengguna' }}</div>

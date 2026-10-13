@@ -39,7 +39,7 @@ export default defineNuxtConfig({
     inlineStyles: true,
   },
 
-  css: ["@fontsource-variable/plus-jakarta-sans", "~/index.css"],
+  css: ["~/index.css"],
 
   modules: ["@pinia/nuxt"],
 
@@ -52,6 +52,18 @@ export default defineNuxtConfig({
     },
     build: {
       chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/lucide-vue-next')) {
+              return 'icons';
+            }
+            if (id.includes('node_modules/sweetalert2')) {
+              return 'swal';
+            }
+          }
+        }
+      }
     },
   },
 
