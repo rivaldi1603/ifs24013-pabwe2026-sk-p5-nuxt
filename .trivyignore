@@ -2,7 +2,18 @@
 # 1. braces (stack-exhaustion DoS): no published version fix yet (> 3.0.3)
 GHSA-vfj7-8cjw-p6xm
 CVE-2026-93687
+CVE-2024-4068
+GHSA-grv7-fg5c-x5vh
 
 # 2. node-forge (RSA PKCS#1 v1.5 verification in listhen): no published version fix yet (> 1.4.0)
 GHSA-86w9-cpqp-85rv
 CVE-2026-85393
+CVE-2026-33894
+CVE-2026-33895
+CVE-2026-33896
+CVE-2022-0122
+CVE-2020-7720
+GHSA-2r2c-g64h-7558
+GHSA-5rrq-pxf6-6jx5
+GHSA-x4jg-mjrx-43qc
+GHSA-gf4q-5ghj-rgcg
