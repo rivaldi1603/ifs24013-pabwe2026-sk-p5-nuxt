@@ -82,6 +82,7 @@ describe('ProfilePage', () => {
     const input = wrapper.find('input[type="file"]');
     Object.defineProperty(input.element, 'files', { value: [new File([''], 'test')], configurable: true });
     await input.trigger('change');
+    expect(store.asyncUploadAvatar).toHaveBeenCalled();
   });
   
   it('handles updates error', async () => {
@@ -142,12 +143,15 @@ describe('ProfilePage', () => {
 
     const pwdInput = wrapper.find('input[type="password"]');
     await pwdInput.setValue('a');
+    expect((wrapper.vm as any).passwordStrengthText).toBe('Sangat Lemah');
     await pwdInput.setValue(''); // trigger if (!password.value)
     await pwdInput.setValue('a');
     await pwdInput.setValue('abcdef');
     await pwdInput.setValue('abcdefghi');
     await pwdInput.setValue('Abcdefghi');
     await pwdInput.setValue('Abcdefghi1!');
+    expect((wrapper.vm as any).passwordStrengthText).toBe('Kuat');
+    expect((wrapper.vm as any).passwordStrengthPercent).toBe(100);
 
     const toggleBtn = wrapper.find('button[type="button"].absolute');
     if (toggleBtn.exists()) {

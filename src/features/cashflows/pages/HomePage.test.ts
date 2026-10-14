@@ -87,12 +87,14 @@ describe('HomePage', () => {
     const addBtn = wrapper.findAll('button').find(b => b.text().includes('+ Tambah Transaksi'));
     await addBtn?.trigger('click');
     await flushPromises();
+    expect((wrapper.vm as any).isAddModalOpen).toBe(true);
     
     // Change modal
     const changeBtns = wrapper.findAll('button').filter(b => b.attributes('title') === 'Ubah');
     if (changeBtns.length > 0) {
       await changeBtns[0].trigger('click');
       await flushPromises();
+      expect((wrapper.vm as any).isChangeModalOpen).toBe(true);
     }
 
     // trigger close on modals
@@ -150,9 +152,11 @@ describe('HomePage', () => {
     await nextTick();
     
     const addBtns = wrapper.findAll('button').filter(b => b.text().includes('Tambah Transaksi'));
+    expect(addBtns.length).toBeGreaterThan(0);
     if (addBtns.length > 1) {
       await addBtns[1].trigger('click');
       await flushPromises();
+      expect((wrapper.vm as any).isAddModalOpen).toBe(true);
     }
     expect(wrapper.exists()).toBe(true);
   });
