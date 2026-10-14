@@ -12,7 +12,7 @@ export function removeAccessToken(): void {
 
 export async function fetchApi(endpoint: string, options: RequestInit = {}) {
   /* v8 ignore next */
-  const base = typeof globalThis.window === 'undefined' ? 'http://localhost' : globalThis.window.location.origin;
+  const base = globalThis.window === undefined ? 'http://localhost' : globalThis.window.location.origin;
   const url = new URL(`${DELCOM_BASEURL}${endpoint}`, base).toString();
   
   const headers = new Headers(options.headers || {});
