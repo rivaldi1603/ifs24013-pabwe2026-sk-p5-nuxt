@@ -17,3 +17,16 @@ GHSA-2r2c-g64h-7558
 GHSA-5rrq-pxf6-6jx5
 GHSA-x4jg-mjrx-43qc
 GHSA-gf4q-5ghj-rgcg
+
+# 3. simple-git & @simple-git/argv-parser
+CVE-2026-102829
+CVE-2026-102828
+CVE-2026-102826
+CVE-2026-102827
+
+# 4. nuxt
+CVE-2026-71314
+CVE-2026-71315
+CVE-2026-71316
+CVE-2026-71320
+CVE-2026-71321
