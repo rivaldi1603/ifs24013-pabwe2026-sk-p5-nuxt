@@ -2,23 +2,21 @@ import { mount } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { createRouter, createMemoryHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import { routes } from './routes';
 
-// Lightweight stub routes for tests (same paths as src/routes.ts) so tests don't
+// Lightweight stub routes for tests (derived from src/routes.ts) so tests don't
 // trigger lazy page imports after the test environment is torn down.
 const Stub = { template: '<div />' };
-export const testRoutes: RouteRecordRaw[] = [
-  { path: '/auth', component: Stub, children: [
-    { path: 'login', component: Stub },
-    { path: 'register', component: Stub },
-  ] },
-  { path: '/', component: Stub, children: [
-    { path: '', component: Stub },
-    { path: 'cash-flows/:cashFlowId', component: Stub },
-    { path: 'users', component: Stub },
-    { path: 'profile', component: Stub },
-  ] },
-  { path: '/:pathMatch(.*)*', component: Stub },
-];
+
+function createStubRoutes(routeList: RouteRecordRaw[]): RouteRecordRaw[] {
+  return routeList.map((r) => ({
+    path: r.path,
+    component: Stub,
+    ...(r.children ? { children: createStubRoutes(r.children) } : {}),
+  }));
+}
+
+export const testRoutes: RouteRecordRaw[] = createStubRoutes(routes);
 
 export function createMockPinia() {
   const pinia = createPinia();
