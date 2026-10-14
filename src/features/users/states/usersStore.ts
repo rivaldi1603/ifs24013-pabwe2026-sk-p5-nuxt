@@ -30,8 +30,6 @@ export const useUsersStore = defineStore("users", {
         const response = await getMe();
         this.me = response?.data?.user || response?.data || response || null;
         return response;
-      } catch (error) {
-        throw error;
       } finally {
         this.isLoading = false;
       }

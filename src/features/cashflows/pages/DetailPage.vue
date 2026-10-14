@@ -68,13 +68,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCashFlowsStore } from '../states/cashFlowsStore';
 import { formatRupiah, formatDate, showConfirmDialog, showSuccessDialog, showErrorDialog } from '../../../helpers/toolsHelper';
-import { defineAsyncComponent } from 'vue';
-const ChangeModal = defineAsyncComponent(() => import('../modals/ChangeModal.vue'));
 import { ArrowLeft as ArrowLeftIcon, TrendingUp as TrendingUpIcon, TrendingDown as TrendingDownIcon } from 'lucide-vue-next';
+
+const ChangeModal = defineAsyncComponent(() => import('../modals/ChangeModal.vue'));
 
 const route = useRoute();
 const router = useRouter();
@@ -91,7 +91,8 @@ const sourceLabel = (src: string) => {
 const fetchDetail = async () => {
   try {
     await cashFlowsStore.asyncGetCashFlowDetail(id);
-  } catch (err) {
+  } catch (error) {
+    console.error('Failed to fetch cash flow detail:', error);
     router.push('/');
   }
 };

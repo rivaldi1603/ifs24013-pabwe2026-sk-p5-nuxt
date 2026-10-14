@@ -4,7 +4,7 @@ import { removeAccessToken } from "../../../helpers/apiHelper";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    authUser: null as any | null,
+    authUser: null as Record<string, any> | null,
     isLogin: false,
     isRegister: false,
   }),

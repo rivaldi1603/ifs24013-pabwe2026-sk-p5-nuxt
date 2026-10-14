@@ -109,7 +109,7 @@ const passwordStrengthPercent = computed(() => {
   if (password.value.length > 5) score += 25;
   if (password.value.length > 8) score += 25;
   if (/[A-Z]/.test(password.value)) score += 25;
-  if (/[0-9!@#\$%\^\&*\)\(+=._-]/.test(password.value)) score += 25;
+  if (/[0-9!@#$%^&*()+=._-]/.test(password.value)) score += 25;
   return score;
 });
 
@@ -154,15 +154,15 @@ const onImgError = (event: Event, user: any) => {
 };
 
 onMounted(() => {
-  if (!usersStore.me) {
+  if (usersStore.me) {
+    name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
+  } else {
     usersStore.asyncGetMe().then(() => {
       /* v8 ignore next */
       if (usersStore.me) {
         name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
       }
     }).catch(/* v8 ignore next */ () => {});
-  } else {
-    name.value = usersStore.me.name || usersStore.me.full_name || usersStore.me.username || '';
   }
 });
 
