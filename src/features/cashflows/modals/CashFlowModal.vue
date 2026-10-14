@@ -18,8 +18,9 @@
         </div>
         <form @submit.prevent="handleSubmit" class="p-6 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700">Jenis Arus Kas</label>
+            <label for="cashflow-type" class="block text-sm font-medium text-gray-700">Jenis Arus Kas</label>
             <select
+              id="cashflow-type"
               v-model="type"
               required
               class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 bg-white rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -29,8 +30,9 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Sumber Dana</label>
+            <label for="cashflow-source" class="block text-sm font-medium text-gray-700">Sumber Dana</label>
             <select
+              id="cashflow-source"
               v-model="source"
               required
               class="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 bg-white rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -41,8 +43,9 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Label/Kategori</label>
+            <label for="cashflow-label" class="block text-sm font-medium text-gray-700">Label/Kategori</label>
             <input
+              id="cashflow-label"
               type="text"
               v-model="label"
               required
@@ -51,12 +54,13 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Nominal (Rupiah)</label>
+            <label for="cashflow-nominal" class="block text-sm font-medium text-gray-700">Nominal (Rupiah)</label>
             <div class="mt-1 relative rounded-md shadow-sm">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <span class="text-gray-500 sm:text-sm">Rp</span>
               </div>
               <input
+                id="cashflow-nominal"
                 type="text"
                 :value="rawNominal"
                 @input="formatInput"
@@ -67,8 +71,9 @@
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Deskripsi/Keterangan</label>
+            <label for="cashflow-description" class="block text-sm font-medium text-gray-700">Deskripsi/Keterangan</label>
             <textarea
+              id="cashflow-description"
               v-model="description"
               rows="3"
               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -161,13 +166,13 @@ watch(
 
 const formatInput = (e: Event) => {
   const target = e.target as HTMLInputElement;
-  let val = target.value.replace(/\D/g, '');
+  let val = target.value.replaceAll(/\D/g, '');
   if (!val) {
     rawNominal.value = '';
     nominal.value = null;
     return;
   }
-  nominal.value = parseInt(val, 10);
+  nominal.value = Number.parseInt(val, 10);
   rawNominal.value = new Intl.NumberFormat('id-ID').format(nominal.value);
 };
 
