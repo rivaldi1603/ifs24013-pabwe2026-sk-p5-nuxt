@@ -107,20 +107,8 @@ pipeline {
 
                     echo "=== Trivy Scan ==="
 
-                    cp .trivyignore /tmp/.trivyignore 2>/dev/null || true
-
-                    echo "=== Trivy Preview (Human Readable) ==="
                     trivy fs \
                         --cache-dir .trivy-cache \
-                        --ignorefile .trivyignore \
-                        --scanners vuln \
-                        --severity HIGH,CRITICAL \
-                        . || true
-
-                    echo "=== Trivy Generating SARIF ==="
-                    trivy fs \
-                        --cache-dir .trivy-cache \
-                        --ignorefile .trivyignore \
                         --scanners vuln \
                         --severity HIGH,CRITICAL \
                         --format sarif \
