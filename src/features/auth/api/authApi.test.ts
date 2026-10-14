@@ -15,9 +15,11 @@ describe('authApi', () => {
   });
 
   it('login works if no token in response', async () => {
+    (apiHelper.putAccessToken as any).mockClear();
     (apiHelper.fetchApi as any).mockResolvedValue({});
-    await login({ email: 'a@a.com', password: '123' });
-    // Should not crash
+    const res = await login({ email: 'a@a.com', password: '123' });
+    expect(res).toEqual({});
+    expect(apiHelper.putAccessToken).not.toHaveBeenCalled();
   });
 
   it('register calls fetchApi', async () => {

@@ -44,6 +44,7 @@ describe('ChangeModal', () => {
     // without message
     store.asyncUpdateCashFlow = vi.fn().mockRejectedValue({});
     await wrapper.find('form').trigger('submit.prevent');
+    expect(store.asyncUpdateCashFlow).toHaveBeenCalled();
   });
 
   it('handles close', async () => {
@@ -77,5 +78,10 @@ describe('ChangeModal', () => {
     
     await selects[1].setValue('savings');
     await selects[1].trigger('change');
+
+    expect(inputs[0].element.value).toBe('label2');
+    expect(textarea.element.value).toBe('desc2');
+    expect(selects[0].element.value).toBe('outflow');
+    expect(selects[1].element.value).toBe('savings');
   });
 });

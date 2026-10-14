@@ -23,7 +23,6 @@ describe('HomePage', () => {
     store.stats = { total_inflow: 1000, total_outflow: 500, cash: 100, savings: 200, loans: 200 };
     await nextTick();
     
-    expect(store.asyncGetCashFlows).toHaveBeenCalled;
     expect(wrapper.text()).toContain('Ringkasan Arus Kas');
   });
 
@@ -114,6 +113,8 @@ describe('HomePage', () => {
     for (const link of links) {
       await link.trigger('click').catch(() => {});
     }
+    expect(wrapper.exists()).toBe(true);
+    expect(store.cashFlows.length).toBe(2);
   });
 
   it('handles filters input', async () => {
@@ -153,6 +154,7 @@ describe('HomePage', () => {
       await addBtns[1].trigger('click');
       await flushPromises();
     }
+    expect(wrapper.exists()).toBe(true);
   });
 
   it('handles delete error', async () => {
@@ -213,6 +215,7 @@ describe('HomePage', () => {
     resetBtn = wrapper.findAll('button').find(b => b.text() === 'Reset Semua');
     await resetBtn?.trigger('click');
     await new Promise(r => setTimeout(r, 10));
+    expect(store.asyncDeleteAllCashFlows).toHaveBeenCalled();
   });
 
   it('handles reset all cancel', async () => {

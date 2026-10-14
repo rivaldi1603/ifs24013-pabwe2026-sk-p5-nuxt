@@ -36,6 +36,7 @@ describe('AddModal', () => {
     // without message
     store.asyncAddCashFlow = vi.fn().mockRejectedValue({});
     await wrapper.find('form').trigger('submit.prevent');
+    expect(store.asyncAddCashFlow).toHaveBeenCalled();
   });
 
   it('handles close', async () => {
@@ -68,5 +69,10 @@ describe('AddModal', () => {
     
     await selects[1].setValue('cash');
     await selects[1].trigger('change');
+
+    expect(inputs[0].element.value).toBe('label');
+    expect(textarea.element.value).toBe('desc');
+    expect(selects[0].element.value).toBe('inflow');
+    expect(selects[1].element.value).toBe('cash');
   });
 });

@@ -33,9 +33,9 @@ describe('NavbarComponent', () => {
     usersStore.me = { name: 'A', photo: 'invalid' };
     await nextTick();
     const img = wrapper.find('img[alt="Avatar"]');
-    if (img.exists()) {
-      await img.trigger('error');
-    }
+    expect(img.exists()).toBe(true);
+    await img.trigger('error');
+    expect(img.attributes('src')).toContain('data:image/svg+xml');
   });
 
   it('does not fetch me if already loaded', async () => {

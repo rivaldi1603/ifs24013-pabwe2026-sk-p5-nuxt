@@ -119,6 +119,9 @@ describe('ProfilePage', () => {
     await forms[1].trigger('submit.prevent');
     Object.defineProperty(input.element, 'files', { value: [new File([''], 'test')], configurable: true });
     await input.trigger('change');
+    expect(store.asyncUpdateBio).toHaveBeenCalled();
+    expect(store.asyncUpdatePassword).toHaveBeenCalled();
+    expect(store.asyncUploadAvatar).toHaveBeenCalled();
   });
 
   it('calculates password strength', async () => {
@@ -187,5 +190,8 @@ describe('ProfilePage', () => {
       (wrapper.vm as any).getFallbackUrl({});
       (wrapper.vm as any).onImgError({ target: {} }, {});
     }
+    expect(wrapper.exists()).toBe(true);
+    expect(wrapper.text()).toContain('Profil Saya');
+    expect(store.me?.name).toBe('Valid');
   });
 });
